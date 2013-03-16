@@ -1,0 +1,25 @@
+{
+    "name": "ns/distance-bundle",
+    "type": "symfony-bundle",
+    "description": "A way to handle postal code distance calculations",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Nathanael David Noblet",
+            "email": "nathanael@noblet.ca"
+        }
+    ],
+
+    "require": {
+        "php":              ">=5.3.2",
+	"symfony/symfony":  ">=2.1,<2.3",
+        "doctrine/orm":     ">=2.2.3,<2.4-dev"
+
+    },
+
+    "autoload": {
+        "psr-0": { "NS\\DistanceBundle": "" }
+    },
+    "target-dir": "NS/DistanceBundle"
+}
+
