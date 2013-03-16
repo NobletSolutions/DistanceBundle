@@ -1,0 +1,4 @@
+ns_distance_rest:
+    resource: "@NSDistanceBundle/Controller/RestController.php"
+    type:     annotation
+
