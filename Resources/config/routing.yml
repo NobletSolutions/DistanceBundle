@@ -1,4 +1,5 @@
 ns_distance_rest:
-    resource: "@NSDistanceBundle/Controller/RestController.php"
-    type:     annotation
-
+    pattern:  /rest/distance/{postalcode1}/{postalcode2}/{unit}
+    defaults: { _controller: NSDistanceBundle:Rest:get, _format: json, unit: "k" }
+    requirements:
+        _method: GET
