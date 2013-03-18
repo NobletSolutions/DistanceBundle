@@ -12,10 +12,10 @@ use Doctrine\ORM\EntityRepository;
  */
 class PostalCode extends EntityRepository
 {
-    public function getByCodes($codes)
+    public function getByCodes(array $codes)
     {
-        return $this->_em->createQuery("SELECT p FROM NS\DistanceBundle\Entity\PostalCode p INDEX BY p.postalCode WHERE p.postalCode IN (:p1,:p2)")
-                  ->setParameters(array('p1'=>$codes[0],'p2'=>$codes[1]))
+        return $this->_em->createQuery("SELECT p FROM NS\DistanceBundle\Entity\PostalCode p INDEX BY p.postalCode WHERE p.postalCode IN (:ids)")
+                  ->setParameters(array('ids'=>$codes))
                   ->getResult();
     }
 }

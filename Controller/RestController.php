@@ -13,8 +13,11 @@ class RestController extends FOSRestController
      */
     public function getAction($postalcode1,$postalcode2,$unit)
     {
+        if(strpos($postalcode2, ',') !== FALSE)
+            $postalcode2 = explode (',', $postalcode2);
+
         $distance = $this->get('ns_distance.calculator')->getDistanceBetweenPostalCodes($postalcode1,$postalcode2,$unit);
 
-        return array('from' => $postalcode1,'to'=>$postalcode2,'distance'=>$distance);
+        return $distance;
     }
 }

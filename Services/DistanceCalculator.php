@@ -43,12 +43,33 @@ class DistanceCalculator
     public function getDistanceBetweenPostalCodes($postal1, $postal2, $unit = 'K')
     {
         $postal1 = strtoupper(preg_replace('/\s+/', '', $postal1));
-        $postal2 = strtoupper(preg_replace('/\s+/', '', $postal2));
-        $data = $this->em->getRepository('NSDistanceBundle:PostalCode')->getByCodes(array($postal1,$postal2));
+        if(is_array($postal2))
+        {
+            foreach($postal2 as &$p)
+                $p = strtoupper(preg_replace('/\s+/', '', $p));
+            
+            $codes = array_merge(array($postal1),$postal2);
+        }
+        else
+        {
+            $postal2 = strtoupper(preg_replace('/\s+/', '', $postal2));
+            $codes = array($postal1,$postal2);
+        }
         
-        if(count($data) != 2)
+        $data = $this->em->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
+        if(count($data) != count($codes))
             throw new \Exception("Unable to find postal code");
         
-        return $this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$postal2]->getLatitude(),$data[$postal2]->getLongitude(),$unit);
+        if(is_array($postal2))
+        {
+            $ret = array();
+                
+            foreach($postal2 as $pcode)
+                $ret[] = array('dest'=>$pcode,'unit'=>$unit, 'distance'=>$this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$pcode]->getLatitude(),$data[$pcode]->getLongitude(),$unit));
+
+            return array($postal1=>$ret);
+        }
+        else
+            return array($postal1=>array(array('dest'=>$postal2, 'unit'=>$unit, 'distance'=> $this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$postal2]->getLatitude(),$data[$postal2]->getLongitude(),$unit))));
     }
 }

@@ -32,8 +32,12 @@ class CalculateCommand extends ContainerAwareCommand
         $source = $input->getArgument('source');
         $dest   = $input->getArgument('dest');
         
+        if(strpos($dest, ',') !== FALSE)
+            $dest = explode (',', $dest);
+
         $distance = $this->getContainer()->get('ns_distance.calculator')->getDistanceBetweenPostalCodes($source,$dest);
-    
-        $output->writeln("The distance between $source and $dest is $distance KM");
+
+        foreach($distance[$source] as $calc)
+            $output->writeln("The distance between $source and {$calc['dest']} is {$calc['distance']} KM");
     }
 }
