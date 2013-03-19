@@ -57,7 +57,7 @@ class DistanceCalculator
         }
         
         $data = $this->em->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
-        if(count($data) != count($codes))
+        if(count($data) < 2)
             throw new \Exception("Unable to find postal code");
         
         if(is_array($postal2))
@@ -65,11 +65,11 @@ class DistanceCalculator
             $ret = array();
                 
             foreach($postal2 as $pcode)
-                $ret[] = array('dest'=>$pcode,'unit'=>$unit, 'distance'=>$this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$pcode]->getLatitude(),$data[$pcode]->getLongitude(),$unit));
+                $ret[$pcode] = array('unit'=>$unit, 'distance'=>$this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$pcode]->getLatitude(),$data[$pcode]->getLongitude(),$unit));
 
             return array($postal1=>$ret);
         }
         else
-            return array($postal1=>array(array('dest'=>$postal2, 'unit'=>$unit, 'distance'=> $this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$postal2]->getLatitude(),$data[$postal2]->getLongitude(),$unit))));
+            return array($postal1=>array($postal2=>array('unit'=>$unit, 'distance'=> $this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$postal2]->getLatitude(),$data[$postal2]->getLongitude(),$unit))));
     }
 }

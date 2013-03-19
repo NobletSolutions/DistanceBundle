@@ -37,7 +37,7 @@ class ImportPostalCodesCommand extends ContainerAwareCommand
         
         $con = $this->getContainer()->get('doctrine.orm.entity_manager')->getConnection();
         $con->exec("TRUNCATE postalcodes");
-        $rows = $con->exec("LOAD DATA INFILE '$newFile2' INTO TABLE postalcodes FIELDS TERMINATED BY ',';");
+        $rows = $con->exec("LOAD DATA INFILE '$newFile2' INTO TABLE postalcodes FIELDS TERMINATED BY ',' (postal_code,latitude,longitude,city,province);");
     
         $output->writeln("Loaded $rows rows");
     }
