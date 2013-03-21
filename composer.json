@@ -14,7 +14,8 @@
         "php":              ">=5.3.2",
 	"symfony/symfony":  ">=2.1,<2.3",
         "doctrine/orm":     ">=2.2.3,<2.4-dev",
-	"friendsofsymfony/rest-bundle": "dev-master"
+        "friendsofsymfony/rest-bundle": "0.12.x-dev",
+        "jms/serializer-bundle": "*"
     },
 
     "autoload": {
