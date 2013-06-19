@@ -65,7 +65,10 @@ class DistanceCalculator
             $ret = array();
                 
             foreach($postal2 as $pcode)
-                $ret[$pcode] = array('unit'=>$unit, 'distance'=>$this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$pcode]->getLatitude(),$data[$pcode]->getLongitude(),$unit));
+            {
+                if(isset($data[$pcode]))
+                    $ret[$pcode] = array('unit'=>$unit,'distance'=> $this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$pcode]->getLatitude(),$data[$pcode]->getLongitude(),$unit));
+            }
 
             return array($postal1=>$ret);
         }

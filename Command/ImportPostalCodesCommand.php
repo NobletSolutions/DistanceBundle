@@ -33,11 +33,11 @@ class ImportPostalCodesCommand extends ContainerAwareCommand
         
         $output->writeln("Gunzip'd $newFile");
         
-        chmod($newFile2,744);
+        chmod($newFile2,766);
         
         $con = $this->getContainer()->get('doctrine.orm.entity_manager')->getConnection();
         $con->exec("TRUNCATE postalcodes");
-        $rows = $con->exec("LOAD DATA INFILE '$newFile2' INTO TABLE postalcodes FIELDS TERMINATED BY ',' (postal_code,latitude,longitude,city,province);");
+        $rows = $con->exec("LOAD DATA INFILE '$newFile2' INTO TABLE postalcodes FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' (postal_code,latitude,longitude,city,province);");
     
         $output->writeln("Loaded $rows rows");
     }
