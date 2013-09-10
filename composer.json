@@ -13,7 +13,7 @@
     "require": {
         "php":              ">=5.3.2",
 	"symfony/symfony":  ">=2.1,<2.4",
-        "friendsofsymfony/rest-bundle": "0.13.x-dev",
+        "friendsofsymfony/rest-bundle": "0.13.1",
         "jms/serializer-bundle": "*"
     },
 
