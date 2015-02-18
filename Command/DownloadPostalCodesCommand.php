@@ -18,6 +18,7 @@ class DownloadPostalCodesCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        exec("wget http://geocoder.ca/onetimedownload/Canada.csv.gz");
+        $filename = $this->getContainer()->get('kernel')->getRootDir()."/../vendor/ns/distance-bundle/NS/DistanceBundle/Resources/config/Canada.csv.gz";
+        exec("wget -O $filename http://geocoder.ca/onetimedownload/Canada.csv.gz");
     }
 }
