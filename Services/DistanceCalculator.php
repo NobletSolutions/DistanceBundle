@@ -2,13 +2,13 @@
 
 namespace NS\DistanceBundle\Services;
 
-use \Doctrine\ORM\ObjectManager;
+use \Doctrine\ORM\EntityManager;
 
 class DistanceCalculator
 {
     private $em;
 
-    public function __construct(ObjectManager $em) 
+    public function __construct(EntityManager $em) 
     {
         $this->em = $em;
     }
