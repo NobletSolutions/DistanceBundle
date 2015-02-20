@@ -55,7 +55,8 @@ class DistanceCalculator
         }
 
         $data = $this->em->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
-        if(count($data) < 2)
+        
+        if(count($data) < 2 && $codes[0] != $codes[1])
             throw new \Exception("Unable to find postal code");
 
         if(is_array($postal2))
