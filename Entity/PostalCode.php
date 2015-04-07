@@ -23,11 +23,13 @@ class PostalCode
      * @ORM\Column(name="postal_code",type="string")
      */
     private $postalCode;
+
     /**
      * @var string $latitude
      * @ORM\Column(name="latitude",type="decimal", precision=14, scale=10)
      */
     private $latitude;
+
     /**
      * @var string $longitude
      * @ORM\Column(name="longitude",type="decimal", precision=14, scale=10)
@@ -46,56 +48,106 @@ class PostalCode
      */
     private $province;
 
+    /**
+     * @return string
+     */
     public function getId()
     {
         return $this->id;
     }
 
+    /**
+     * @return string
+     */
     public function getPostalCode() 
     {
         return $this->postalCode;
     }
 
-    public function setPostalCode($postalCode) {
+    /**
+     * @param string $postalCode
+     * @return \NS\DistanceBundle\Entity\PostalCode
+     */
+    public function setPostalCode($postalCode)
+    {
         $this->postalCode = $postalCode;
-    
+
         return $this;
     }
 
-    public function getLatitude() {
+    /**
+     * @return double
+     */
+    public function getLatitude()
+    {
         return $this->latitude;
     }
 
-    public function setLatitude($latitude) {
+    /**
+     * @param double $latitude
+     * @return \NS\DistanceBundle\Entity\PostalCode
+     */
+    public function setLatitude($latitude)
+    {
         $this->latitude = $latitude;
-        
+
         return $this;
     }
 
-    public function getLongitude() {
+    /**
+     * @return double
+     */
+    public function getLongitude()
+    {
         return $this->longitude;
     }
 
-    public function setLongitude($longitude) {
+    /**
+     * @param double $longitude
+     * @return \NS\DistanceBundle\Entity\PostalCode
+     */
+    public function setLongitude($longitude)
+    {
         $this->longitude = $longitude;
+
         return $this;
     }
 
-    public function getCity() {
+    /**
+     * @return string
+     */
+    public function getCity()
+    {
         return $this->city;
     }
 
-    public function setCity($city) {
+    /**
+     * @param string $city
+     * @return \NS\DistanceBundle\Entity\PostalCode
+     */
+    public function setCity($city)
+    {
         $this->city = $city;
+
         return $this;
     }
 
-    public function getProvince() {
+    /**
+     * @return string
+     */
+    public function getProvince()
+    {
         return $this->province;
     }
 
-    public function setProvince($province) {
+    /**
+     * @param string $province
+     * @return \NS\DistanceBundle\Entity\PostalCode
+     */
+    public function setProvince($province)
+    {
         $this->province = $province;
+
         return $this;
     }
 }
