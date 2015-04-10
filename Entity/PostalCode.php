@@ -5,7 +5,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Table(name="postalcodes")
- * @ORM\Entity(repositoryClass="NS\DistanceBundle\Repositories\PostalCode")
+ * @ORM\Entity(repositoryClass="NS\DistanceBundle\Repositories\PostalCodeRepository")
  */
 class PostalCode implements GeographicPointInterface
 {
