@@ -44,6 +44,31 @@ class Distance
 
     /**
      *
+     * @param string $unit
+     * @return string
+     */
+    public function getDistanceString($unit = self::KM)
+    {
+        $str = null;
+        switch($unit)
+        {
+            case self::NAUTICAL_MILE:
+                $str = 'nm';
+                break;
+            case self::MILE:
+                $str = 'm';
+                break;
+            case self::KM:
+            default:
+                $str = 'KM';
+                break;
+        }
+
+        return sprintf("%01.2f %s",$this->getDistance($unit),$str);
+    }
+
+    /**
+     *
      * @param double $distanceInMiles
      */
     public function setDistance($distanceInMiles)
