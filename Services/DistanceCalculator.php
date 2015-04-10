@@ -56,7 +56,7 @@ class DistanceCalculator
         if (is_array($inPostal2)) {
             $ret = array();
 
-            foreach (array_splice($data, 1) as $pcode) {
+            foreach ($data as $pcode) {
                 $ret[$pcode->getPostalCode()] = $this->getDistance($postal1,$pcode);
             }
 
