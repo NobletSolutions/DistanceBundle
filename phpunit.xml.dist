@@ -21,4 +21,11 @@
     <php>
         <ini name="memory_limit" value="256M" />
     </php>
+    <filter>
+        <whitelist>
+            <exclude>
+                <directory>./vendor</directory>
+            </exclude>
+        </whitelist>
+    </filter>
 </phpunit>

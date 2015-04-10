@@ -3,7 +3,12 @@
 namespace NS\DistanceBundle\Services;
 
 use \Doctrine\ORM\EntityManager;
+use \NS\DistanceBundle\Entity\Distance;
+use \NS\DistanceBundle\Entity\GeographicPointInterface;
 
+/**
+ * @author gnat
+ */
 class DistanceCalculator
 {
     private $entityMgr;
@@ -18,67 +23,49 @@ class DistanceCalculator
     }
 
     /**
-     * This routine calculates the distance between two points (given the
-     * latitude/longitude of those points). 
+     * This routine calculates the distance between two points
      * 
-     * @param lat1 source latitude point
-     * @param lon1 source longitude point
-     * @param lat2 dest latitude point
-     * @param lon2 dest longitude point
-     * @param unit the output unit
+     * @param $source GeographicPointInterface
+     * @param $dest GeographicPointInterface
      */
-    public function getDistance($lat1, $lon1, $lat2, $lon2, $unit)
+    public function getDistance(GeographicPointInterface $source, GeographicPointInterface $dest)
     {
-        $theta     = $lon1 - $lon2;
-        $dist      = rad2deg(acos(sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta))));
-        $miles     = $dist * 60 * 1.1515;
-        $upperUnit = strtoupper($unit);
+        $theta = $source->getLongitude() - $dest->getLongitude();
+        $dist  = rad2deg(acos(sin(deg2rad($source->getLatitude())) * sin(deg2rad($dest->getLatitude())) + cos(deg2rad($source->getLatitude())) * cos(deg2rad($dest->getLatitude())) * cos(deg2rad($theta))));
 
-        switch($upperUnit)
-        {
-            case 'K':
-                $ret = ($miles * 1.609344);
-                break;
-            case 'N':
-                $ret = ($miles * 0.8684);
-                break;
-            default:
-                $ret = $miles;
-                break;
-        }
-
-        return $ret;
+        return new Distance($dist * 60 * 1.1515);
     }
 
     /**
      *
      * @param string $inPostal1
-     * @param string $inPostal2
-     * @param string $unit
+     * @param string|array $inPostal2
      * @return array
      */
-    public function getDistanceBetweenPostalCodes($inPostal1, $inPostal2, $unit = 'K')
+    public function getDistanceBetweenPostalCodes($inPostal1, $inPostal2)
     {
         $codes = $this->adjustCodes($inPostal1, $inPostal2);
         $data  = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
 
-        if (count($data) < 2 && $codes[0] != $codes[1]) {
+        if (count($data) < 2 || $codes[0] == $codes[1]) {
             return array();
         }
 
-        if (is_array($postal2)) {
+        $postal1 = $data[$codes[0]];
+
+        if (is_array($inPostal2)) {
             $ret = array();
 
-            foreach ($postal2 as $pcode) {
-                if (isset($data[$pcode])) {
-                    $ret[$pcode] = array('unit' => $unit, 'distance' => $this->getDistance($data[$postal1]->getLatitude(), $data[$postal1]->getLongitude(), $data[$pcode]->getLatitude(), $data[$pcode]->getLongitude(), $unit));
-                }
+            foreach (array_splice($data, 1) as $pcode) {
+                $ret[$pcode->getPostalCode()] = $this->getDistance($postal1,$pcode);
             }
 
-            return array($postal1 => $ret);
+            return array($postal1->getPostalCode() => $ret);
         }
 
-        return array($postal1 => array($postal2 => array('unit' => $unit, 'distance' => $this->getDistance($data[$postal1]->getLatitude(), $data[$postal1]->getLongitude(), $data[$postal2]->getLatitude(), $data[$postal2]->getLongitude(), $unit))));
+        $postal2 = $data[$codes[1]];
+
+        return array($postal1->getPostalCode() => array($postal2->getPostalCode() => $this->getDistance($postal1,$postal2)));
     }
 
     /**
@@ -89,8 +76,8 @@ class DistanceCalculator
     {
         $postal1 = $this->cleanCode($inPostal1);
         if (is_array($inPostal2)) {
-            foreach ($inPostal2 as &$p) {
-                $p = $this->cleanCode($p);
+            foreach ($inPostal2 as &$postalCode) {
+                $postalCode = $this->cleanCode($postalCode);
             }
 
             return array_merge(array($postal1), $inPostal2);

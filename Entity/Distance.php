@@ -9,9 +9,9 @@ namespace NS\DistanceBundle\Entity;
  */
 class Distance
 {
-    const KM            = 0;
-    const NAUTICAL_MILE = 1;
-    const MILE          = 2;
+    const KM            = 'K';
+    const NAUTICAL_MILE = 'NM';
+    const MILE          = 'M';
 
     private $distance;
 
