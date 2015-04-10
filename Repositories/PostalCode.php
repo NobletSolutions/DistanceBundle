@@ -17,7 +17,7 @@ class PostalCode extends EntityRepository
         return $this->_em->createQuery("SELECT p 
                                         FROM NS\DistanceBundle\Entity\PostalCode p INDEX BY p.postalCode 
                                         WHERE p.postalCode IN (:ids)")
-                  ->setParameters(array('ids'=>$codes))
-                  ->getResult();
+                ->setParameters(array('ids' => $codes))
+                ->getResult();
     }
 }
