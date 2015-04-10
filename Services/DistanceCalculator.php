@@ -47,7 +47,7 @@ class DistanceCalculator
         $codes = $this->adjustCodes($inPostal1, $inPostal2);
         $data  = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
 
-        if (count($data) < 2 || $codes[0] == $codes[1]) {
+        if (count($data) < 2) {
             return array();
         }
 
