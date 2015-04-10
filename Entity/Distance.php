@@ -13,7 +13,7 @@ class Distance
     const NAUTICAL_MILE = 'NM';
     const MILE          = 'M';
 
-    private $distance;
+    public $distance;
 
     /**
      *
