@@ -2,6 +2,7 @@
 
 namespace NS\DistanceBundle\Services;
 
+use \Doctrine\Common\Persistence\ObjectManager;
 use \Doctrine\ORM\EntityManager;
 use \NS\DistanceBundle\Entity\Distance;
 use \NS\DistanceBundle\Entity\GeographicPointInterface;
@@ -17,7 +18,7 @@ class DistanceCalculator
      *
      * @param EntityManager $em
      */
-    public function __construct(EntityManager $em)
+    public function __construct(ObjectManager $em)
     {
         $this->entityMgr = $em;
     }
