@@ -25,11 +25,7 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
             ->with(array('T3A5J4', 'T2L0W2', 'T3A0A1'))
             ->willReturn($this->getPostalCodesObjects(true));
 
-        $mockEntityMgr = $this->getMockBuilder('Doctrine\ORM\EntityManager')
-            ->disableOriginalConstructor()
-            ->setMethods(array('getRepository'))
-            ->getMock();
-
+        $mockEntityMgr = $this->getEntityManager();
         $mockEntityMgr->expects($this->once())
             ->method('getRepository')
             ->with('NSDistanceBundle:PostalCode')
@@ -42,7 +38,7 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
         $this->assertNotEmpty($distance);
         $this->assertCount(1, $distance);
         $this->assertArrayHasKey('T3A5J4', $distance);
-        $this->assertCount(2, $distance['T3A5J4']);
+        $this->assertCount(2, $distance['T3A5J4'], print_r($distance['T3A5J4'],true));
         $this->assertArrayHasKey('T2L0W2', $distance['T3A5J4']);
         $this->assertArrayHasKey('T3A0A1', $distance['T3A5J4']);
         $this->assertInstanceOf('NS\DistanceBundle\Entity\Distance', $distance['T3A5J4']['T2L0W2']);
@@ -60,10 +56,7 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
             ->with(array('T3A5J4', 'T2L0W2'))
             ->willReturn($this->getPostalCodesObjects());
 
-        $mockEntityMgr = $this->getMockBuilder('Doctrine\ORM\EntityManager')
-            ->disableOriginalConstructor()
-            ->setMethods(array('getRepository'))
-            ->getMock();
+        $mockEntityMgr = $this->getEntityManager();
 
         $mockEntityMgr->expects($this->once())
             ->method('getRepository')
@@ -91,10 +84,7 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
             ->with(array('T3A5J4', 'T2L0W2'))
             ->willReturn(array());
 
-        $mockEntityMgr = $this->getMockBuilder('Doctrine\ORM\EntityManager')
-            ->disableOriginalConstructor()
-            ->setMethods(array('getRepository'))
-            ->getMock();
+        $mockEntityMgr = $this->getEntityManager();
 
         $mockEntityMgr->expects($this->once())
             ->method('getRepository')
@@ -116,12 +106,9 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
         $repo->expects($this->once())
             ->method('getByCodes')
             ->with(array('T3A5J4', 'T3A5J4'))
-            ->willReturn(array('T3A5J4', 'T3A5J4'));
+            ->willReturn(array('T3A5J4'=> 'T3A5J4'));
 
-        $mockEntityMgr = $this->getMockBuilder('Doctrine\ORM\EntityManager')
-            ->disableOriginalConstructor()
-            ->setMethods(array('getRepository'))
-            ->getMock();
+        $mockEntityMgr = $this->getEntityManager();
 
         $mockEntityMgr->expects($this->once())
             ->method('getRepository')
@@ -135,10 +122,7 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
 
     public function testGetDistance()
     {
-        $mockEntityMgr = $this->getMockBuilder('Doctrine\ORM\EntityManager')
-            ->disableOriginalConstructor()
-            ->getMock();
-
+        $mockEntityMgr = $this->getEntityManager();
         $ret = $this->getPostalCodesObjects();
 
         $calculator = new DistanceCalculator($mockEntityMgr);
@@ -150,10 +134,7 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
 
     public function testAdjustCodesArray()
     {
-        $mockEntityMgr = $this->getMockBuilder('Doctrine\ORM\EntityManager')
-            ->disableOriginalConstructor()
-            ->getMock();
-
+        $mockEntityMgr = $this->getEntityManager();
         $calculator = new DistanceCalculator($mockEntityMgr);
         $codes      = $calculator->adjustCodes('T2L 0w2', array('t3a5j4', 'H0h0h0'));
         $this->assertEquals($codes[0], 'T2L0W2');
@@ -163,10 +144,7 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
 
     public function testAdjustCodesNoArray()
     {
-        $mockEntityMgr = $this->getMockBuilder('Doctrine\ORM\EntityManager')
-            ->disableOriginalConstructor()
-            ->getMock();
-
+        $mockEntityMgr = $this->getEntityManager();
         $calculator = new DistanceCalculator($mockEntityMgr);
         $codes      = $calculator->adjustCodes('T2L 0w2', 't3a5j4');
         $this->assertEquals($codes[0], 'T2L0W2');
@@ -178,11 +156,8 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
      */
     public function testCleanCode($code)
     {
-        $mockEntityMgr = $this->getMockBuilder('Doctrine\ORM\EntityManager')
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $calculator = new DistanceCalculator($mockEntityMgr);
+        $mockEntityMgr = $this->getEntityManager();
+        $calculator    = new DistanceCalculator($mockEntityMgr);
         $this->assertEquals('T2L0W2', $calculator->cleanCode($code));
     }
 
@@ -221,5 +196,15 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
         }
 
         return array('T3A5J4' => $source, 'T2L0W2' => $dest);
+    }
+
+    public function getEntityManager(array $methods = array())
+    {
+        $objMethods = array('find','persist','remove','flush','detach','refresh','merge','clear','getClassMetadata','getMetadataFactory','initializeObject','getRepository','contains');
+        return $this->getMockBuilder('Doctrine\Common\Persistence\ObjectManager')
+            ->disableOriginalConstructor()
+            ->setMethods(array_merge($objMethods,$methods))
+            ->getMock();
+
     }
 }

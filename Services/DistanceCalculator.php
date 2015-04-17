@@ -58,7 +58,9 @@ class DistanceCalculator
             $ret = array();
 
             foreach ($data as $pcode) {
-                $ret[$pcode->getPostalCode()] = $this->getDistance($postal1,$pcode);
+                if($pcode != $postal1) {
+                    $ret[$pcode->getPostalCode()] = $this->getDistance($postal1,$pcode);
+                }
             }
 
             return array($postal1->getPostalCode() => $ret);
