@@ -21,11 +21,15 @@
     <php>
         <ini name="memory_limit" value="256M" />
     </php>
+
     <filter>
         <whitelist>
-            <exclude>
-                <directory>./vendor</directory>
-            </exclude>
+            <!--<directory>Command</directory>-->
+            <directory>Controller</directory>
+            <directory>Entity</directory>
+            <directory>Exceptions</directory>
+            <!-- <directory>Repositories</directory> -->
+            <directory>Services</directory>
         </whitelist>
     </filter>
 </phpunit>
