@@ -3,4 +3,5 @@ VERSION 1  INITIAL RELEASE
 ==========================
 
    Version 1.0 - Initial release
+      01/05/2015 21:30  1.0.1  Fixed a bug when we don't find the postal code
       17/04/2015 16:40  1.0.0  initial release
