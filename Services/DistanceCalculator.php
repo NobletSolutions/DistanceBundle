@@ -6,6 +6,7 @@ use \Doctrine\Common\Persistence\ObjectManager;
 use \Doctrine\ORM\EntityManager;
 use \NS\DistanceBundle\Entity\Distance;
 use \NS\DistanceBundle\Entity\GeographicPointInterface;
+use \NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
 
 /**
  * @author gnat
@@ -50,6 +51,10 @@ class DistanceCalculator
 
         if (count($data) < 2) {
             return array();
+        }
+
+        if (!isset($data[$codes[0]])) {
+            throw new UnknownPostalCodeException(sprintf("Source postalcode '%s/%s' not found",$inPostal1,$codes[0]));
         }
 
         $postal1 = $data[$codes[0]];

@@ -152,6 +152,33 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @expectedException NS\DistanceBundle\Exceptions\UnknownPostalCodeException
+     */
+    public function testNoSourcePostalCode()
+    {
+        $repo = $this->getMockBuilder('Doctrine\ORM\EntityRepository')
+            ->disableOriginalConstructor()
+            ->setMethods(array('getByCodes'))
+            ->getMock();
+
+        $repo->expects($this->once())
+            ->method('getByCodes')
+            ->with(array('H0H0H0', 'T2A6J3'))
+            ->willReturn($this->getPostalCodesObjects());
+
+        $mockEntityMgr = $this->getEntityManager();
+
+        $mockEntityMgr->expects($this->once())
+            ->method('getRepository')
+            ->with('NSDistanceBundle:PostalCode')
+            ->willReturn($repo);
+
+        $calculator = new DistanceCalculator($mockEntityMgr);
+        $distance   = $calculator->getDistanceBetweenPostalCodes('H0H0H0', 'T2A6J3');
+        $this->assertEmpty($distance);
+    }
+
+    /**
      * @dataProvider getPostalCodes
      */
     public function testCleanCode($code)
