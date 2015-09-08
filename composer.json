@@ -2,6 +2,7 @@
     "name": "ns/distance-bundle",
     "type": "symfony-bundle",
     "description": "A way to handle postal code distance calculations",
+    "license": "MIT",
     "minimum-stability": "stable",
     "authors": [
         {
