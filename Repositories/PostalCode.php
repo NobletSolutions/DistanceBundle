@@ -2,7 +2,8 @@
 
 namespace NS\DistanceBundle\Repositories;
 
-use Doctrine\ORM\EntityRepository;
+use \Doctrine\ORM\EntityRepository;
+use \Doctrine\ORM\UnexpectedResultException;
 
 /**
  * PostalCode
@@ -19,5 +20,18 @@ class PostalCode extends EntityRepository
                                         WHERE p.postalCode IN (:ids)")
                   ->setParameters(array('ids'=>$codes))
                   ->getResult();
+    }
+
+    public function getByCode($postalCode)
+    {
+        try {
+            return $this->createQueryBuilder('p')
+                ->where('p.postalCode = :pCode')
+                ->setParameter('pcode',$postalCode)
+                ->getQuery()
+                ->getSingleResult();
+        } catch (UnexpectedResultException $exception) {
+            return null;
+        }
     }
 }
