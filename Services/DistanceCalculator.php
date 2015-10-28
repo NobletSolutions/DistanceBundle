@@ -2,76 +2,106 @@
 
 namespace NS\DistanceBundle\Services;
 
+use \Doctrine\Common\Persistence\ObjectManager;
 use \Doctrine\ORM\EntityManager;
+use \NS\DistanceBundle\Entity\Distance;
+use \NS\DistanceBundle\Entity\GeographicPointInterface;
+use \NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
 
+/**
+ * @author gnat
+ */
 class DistanceCalculator
 {
-    private $em;
+    private $entityMgr;
 
-    public function __construct(EntityManager $em) 
+    /**
+     *
+     * @param EntityManager $em
+     */
+    public function __construct(ObjectManager $em)
     {
-        $this->em = $em;
+        $this->entityMgr = $em;
     }
 
     /**
-     * This routine calculates the distance between two points (given the
-     * latitude/longitude of those points). 
+     * This routine calculates the distance between two points
      * 
-     * @param lat1 source latitude point
-     * @param lon1 source longitude point
-     * @param lat2 dest latitude point
-     * @param lon2 dest longitude point
-     * @param unit the output unit
+     * @param $source GeographicPointInterface
+     * @param $dest GeographicPointInterface
      */
-    public function getDistance($lat1, $lon1, $lat2, $lon2, $unit) 
+    public function getDistance(GeographicPointInterface $source, GeographicPointInterface $dest)
     {
-        $theta = $lon1 - $lon2; 
-        $dist = rad2deg(acos( sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta)) )); 
-        $miles = $dist * 60 * 1.1515;
-        $unit = strtoupper($unit);
- 
-        if (\strcasecmp($unit, "K") == 0)
-            return ($miles * 1.609344);
-        else if (\strcasecmp($unit, "N") == 0)
-            return ($miles * 0.8684);
-        else
-            return $miles;
+        $theta = $source->getLongitude() - $dest->getLongitude();
+        $dist  = rad2deg(acos(sin(deg2rad($source->getLatitude())) * sin(deg2rad($dest->getLatitude())) + cos(deg2rad($source->getLatitude())) * cos(deg2rad($dest->getLatitude())) * cos(deg2rad($theta))));
+
+        return new Distance($dist * 60 * 1.1515);
     }
 
-    public function getDistanceBetweenPostalCodes($postal1, $postal2, $unit = 'K')
+    /**
+     *
+     * @param string $inPostal1
+     * @param string|array $inPostal2
+     * @return array
+     */
+    public function getDistanceBetweenPostalCodes($inPostal1, $inPostal2)
     {
-        $postal1 = strtoupper(preg_replace('/\s+/', '', $postal1));
-        if(is_array($postal2))
-        {
-            foreach($postal2 as &$p)
-                $p = strtoupper(preg_replace('/\s+/', '', $p));
+        $codes = $this->adjustCodes($inPostal1, $inPostal2);
+        $data  = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
 
-            $codes = array_merge(array($postal1),$postal2);
-        }
-        else
-        {
-            $postal2 = strtoupper(preg_replace('/\s+/', '', $postal2));
-            $codes = array($postal1,$postal2);
+        if (count($data) < 2) {
+            return array();
         }
 
-        $data = $this->em->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
-        
-        if(count($data) < 2 && $codes[0] != $codes[1])
-            throw new \Exception("Unable to find postal code");
+        if (!isset($data[$codes[0]])) {
+            throw new UnknownPostalCodeException(sprintf("Source postalcode '%s/%s' not found",$inPostal1,$codes[0]));
+        }
 
-        if(is_array($postal2))
-        {
+        $postal1 = $data[$codes[0]];
+
+        if (is_array($inPostal2)) {
             $ret = array();
 
-            foreach($postal2 as $pcode)
-            {
-                if(isset($data[$pcode]))
-                    $ret[$pcode] = array('unit'=>$unit,'distance'=> $this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$pcode]->getLatitude(),$data[$pcode]->getLongitude(),$unit));
+            foreach ($data as $pcode) {
+                if($pcode != $postal1) {
+                    $ret[$pcode->getPostalCode()] = $this->getDistance($postal1,$pcode);
+                }
             }
 
-            return array($postal1=>$ret);
+            return array($postal1->getPostalCode() => $ret);
         }
-        else
-            return array($postal1=>array($postal2=>array('unit'=>$unit, 'distance'=> $this->getDistance($data[$postal1]->getLatitude(),$data[$postal1]->getLongitude(),$data[$postal2]->getLatitude(),$data[$postal2]->getLongitude(),$unit))));
+
+        $postal2 = $data[$codes[1]];
+
+        return array($postal1->getPostalCode() => array($postal2->getPostalCode() => $this->getDistance($postal1,$postal2)));
+    }
+
+    /**
+     * @param string $inPostal1
+     * @param string|array $inPostal2
+     */
+    public function adjustCodes($inPostal1, $inPostal2)
+    {
+        $postal1 = $this->cleanCode($inPostal1);
+        if (is_array($inPostal2)) {
+            foreach ($inPostal2 as &$postalCode) {
+                $postalCode = $this->cleanCode($postalCode);
+            }
+
+            return array_merge(array($postal1), $inPostal2);
+        }
+
+        $postal2 = $this->cleanCode($inPostal2);
+        return array($postal1, $postal2);
+    }
+
+    /**
+     *
+     * @param string $code
+     * @return string
+     */
+    public function cleanCode($code)
+    {
+        return strtoupper(preg_replace('/\s+/', '', $code));
     }
 }

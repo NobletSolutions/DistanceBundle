@@ -2,22 +2,25 @@
 
 namespace NS\DistanceBundle\Controller;
 
-use FOS\RestBundle\Controller\Annotations as Rest;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use FOS\RestBundle\Controller\FOSRestController;
+use \NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
+use \Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use \Symfony\Component\HttpFoundation\Response;
 
-class RestController extends FOSRestController
+class RestController extends Controller
 {
-    /**
-     * @Rest\View
-     */
-    public function getAction($postalcode1,$postalcode2,$unit)
+    public function getAction($postalcode1, $postalcode2)
     {
-        if(strpos($postalcode2, ',') !== FALSE)
-            $postalcode2 = explode (',', $postalcode2);
+        if (strpos($postalcode2, ',') !== FALSE) {
+            $postalcode2 = explode(',', $postalcode2);
+        }
 
-        $distance = $this->get('ns_distance.calculator')->getDistanceBetweenPostalCodes($postalcode1,$postalcode2,$unit);
+        try {
+            $distance = $this->get('ns_distance.calculator')->getDistanceBetweenPostalCodes($postalcode1, $postalcode2);
+        }
+        catch (UnknownPostalCodeException $exception) {
+            $distance = array();
+        }
 
-        return $distance;
+        return new Response(json_encode($distance), 200, array('Content-Type' => 'application/json'));
     }
 }
