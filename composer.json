@@ -2,6 +2,7 @@
     "name": "ns/distance-bundle",
     "type": "symfony-bundle",
     "description": "A way to handle postal code distance calculations",
+    "license": "MIT",
     "minimum-stability": "stable",
     "authors": [
         {
@@ -16,9 +17,8 @@
     },
 
     "autoload": {
-        "psr-0": { "NS\\DistanceBundle": "" }
+        "psr-4": { "NS\\DistanceBundle\\": "" }
     },
-    "target-dir": "NS/DistanceBundle",
     "require-dev": {
         "phpunit/phpunit": "~4.8@dev",
         "liip/rmt": "1.*"
