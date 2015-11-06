@@ -1,7 +1,9 @@
-parameters:
-#    ns_distance.example.class: NS\AuthBundle\Example
-
 services:
-    ns_distance.calculator:
-      class: NS\DistanceBundle\Services\DistanceCalculator
-      arguments: [ "@doctrine.orm.entity_manager" ]
+  ns_distance.postalcode_checker:
+    class: NS\DistanceBundle\Services\PostalCodeChecker
+    arguments: [ "@doctrine.orm.entity_manager" ]
+
+  ns_distance.calculator:
+    class: NS\DistanceBundle\Services\DistanceCalculator
+    arguments: [ "@doctrine.orm.entity_manager" ]
+
