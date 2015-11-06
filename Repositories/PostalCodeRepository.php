@@ -26,7 +26,7 @@ class PostalCodeRepository extends EntityRepository
     {
         try {
             return $this->createQueryBuilder('p')
-                ->where('p.postalCode = :pCode')
+                ->where('p.postalCode = :pcode')
                 ->setParameter('pcode',$postalCode)
                 ->getQuery()
                 ->getSingleResult();
