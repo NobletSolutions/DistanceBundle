@@ -27,6 +27,7 @@ class PostalCodeChecker
      */
     public function getLatitudeAndLongitude($postalCode)
     {
+        $postalCode = strtoupper(preg_replace('/\s+/', '', $postalCode));
         $postalObj = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCode($postalCode);
 
         if(!$postalObj) {
