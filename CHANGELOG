@@ -3,6 +3,7 @@ VERSION 1  INITIAL RELEASE
 ==========================
 
    Version 1.0 - Initial release
+      09/11/2015 17:22  1.0.6  Fix postal code checker to set the province and postal code properly
       06/11/2015 13:32  1.0.5  Fix checker to clean postal codes
       06/11/2015 13:06  1.0.4  Fix problematic repository function
       06/11/2015 12:50  1.0.3  Added a postal code checker backed by google service
