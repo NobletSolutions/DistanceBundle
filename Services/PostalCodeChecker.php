@@ -45,7 +45,8 @@ class PostalCodeChecker
                 $postalObj->setLongitude($geometry['location']['lat']);
                 $postalObj->setLatitude($geometry['location']['lng']);
                 $postalObj->setCity($response['results'][0]['address_components'][2]['short_name']);
-                $postalObj->setPostalCode($response['results'][0]['address_components'][4]['short_name']);
+                $postalObj->setPostalCode($postalCode);
+                $postalObj->setProvince(isset($response['results'][0]['address_components'][4]['short_name'])? $response['results'][0]['address_components'][4]['short_name']: "AB");
                 $this->entityMgr->persist($postalObj);
             }
         }
