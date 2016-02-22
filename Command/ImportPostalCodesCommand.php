@@ -45,3 +45,4 @@ class ImportPostalCodesCommand extends ContainerAwareCommand
         $output->writeln("Loaded $rows rows");
     }
 }
+

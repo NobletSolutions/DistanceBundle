@@ -40,3 +40,4 @@ class CalculateCommand extends ContainerAwareCommand
         }
     }
 }
+

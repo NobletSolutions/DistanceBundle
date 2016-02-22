@@ -151,3 +151,4 @@ class PostalCode implements GeographicPointInterface
         return $this;
     }
 }
+

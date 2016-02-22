@@ -24,3 +24,4 @@ class RestController extends Controller
         return new Response(json_encode($distance), 200, array('Content-Type' => 'application/json'));
     }
 }
+
