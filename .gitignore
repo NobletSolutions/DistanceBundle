@@ -1,5 +1,4 @@
 *.gz
 vendor
-nbproject
 coverage
 composer.lock
