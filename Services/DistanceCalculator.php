@@ -105,3 +105,4 @@ class DistanceCalculator
         return strtoupper(preg_replace('/\s+/', '', $code));
     }
 }
+
