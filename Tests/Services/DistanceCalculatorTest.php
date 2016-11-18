@@ -96,7 +96,23 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($distance);
     }
 
-    public function testGetDistanceByCodeUsingDuplicateCodes()
+    public function testSimpleGetDistanceByCodeSameCodeIsZero()
+    {
+        $mockEntityMgr = $this->getEntityManager();
+
+        $mockEntityMgr->expects($this->never())
+            ->method('getRepository')
+            ->with('NSDistanceBundle:PostalCode');
+
+        $calculator = new DistanceCalculator($mockEntityMgr);
+        $distance   = $calculator->getDistanceBetweenPostalCodes('T3A5J4', 'T3A5J4');
+        $this->assertCount(1, $distance);
+        $this->assertArrayHasKey('T3A5J4', $distance);
+        $this->assertArrayHasKey('T3A5J4', $distance['T3A5J4']);
+        $this->assertInstanceOf('NS\DistanceBundle\Entity\Distance', $distance['T3A5J4']['T3A5J4']);
+    }
+
+    public function testIncludingSourceAndDestCodesResultsInZeroDistance()
     {
         $repo = $this->getMockBuilder('Doctrine\ORM\EntityRepository')
             ->disableOriginalConstructor()
@@ -105,8 +121,8 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
 
         $repo->expects($this->once())
             ->method('getByCodes')
-            ->with(array('T3A5J4', 'T3A5J4'))
-            ->willReturn(array('T3A5J4'=> 'T3A5J4'));
+            ->with(array('T3A5J4', 'T2L0W2', 'T3A5J4'))
+            ->willReturn($this->getPostalCodesObjects());
 
         $mockEntityMgr = $this->getEntityManager();
 
@@ -116,8 +132,21 @@ class DistanceCalculatorTest extends \PHPUnit_Framework_TestCase
             ->willReturn($repo);
 
         $calculator = new DistanceCalculator($mockEntityMgr);
-        $distance   = $calculator->getDistanceBetweenPostalCodes('T3A5J4', 'T3A5J4');
-        $this->assertEmpty($distance);
+        $distance   = $calculator->getDistanceBetweenPostalCodes('T3A5J4', array('T2L0W2','T3A5J4'));
+        $this->assertNotEmpty($distance);
+        $this->assertCount(1, $distance);
+        $this->assertArrayHasKey('T3A5J4', $distance);
+        $this->assertCount(2, $distance['T3A5J4'],print_r($distance,true));
+        $this->assertArrayHasKey('T2L0W2', $distance['T3A5J4']);
+        $this->assertArrayHasKey('T3A5J4', $distance['T3A5J4']);
+        $this->assertInstanceOf('NS\DistanceBundle\Entity\Distance', $distance['T3A5J4']['T2L0W2']);
+    }
+
+    public function testAdjustCodesHasDuplicates()
+    {
+        $mockEntityMgr = $this->getEntityManager();
+        $calculator = new DistanceCalculator($mockEntityMgr);
+        $this->assertEquals(array('T3A5J4','T2L0W2','T3A5J4'),$calculator->adjustCodes('T3A5J4', array('T2L0W2','T3A5J4')));
     }
 
     public function testGetDistance()

@@ -47,14 +47,21 @@ class DistanceCalculator
     public function getDistanceBetweenPostalCodes($inPostal1, $inPostal2)
     {
         $codes = $this->adjustCodes($inPostal1, $inPostal2);
-        $data  = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
+
+        // When we are comparing two identical postal codes inPostal2 is a string
+        if (is_string($inPostal2) && $codes[0] == $codes[1]) {
+            return array($inPostal1 => array($inPostal1 => new Distance(0)));
+        }
+
+        /** @var PostalCode[] $data */
+        $data = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
 
         if (count($data) < 2) {
             return array();
         }
 
         if (!isset($data[$codes[0]])) {
-            throw new UnknownPostalCodeException(sprintf("Source postalcode '%s/%s' not found",$inPostal1,$codes[0]));
+            throw new UnknownPostalCodeException(sprintf("Source postalcode '%s/%s' not found", $inPostal1, $codes[0]));
         }
 
         $postal1 = $data[$codes[0]];
@@ -62,9 +69,14 @@ class DistanceCalculator
         if (is_array($inPostal2)) {
             $ret = array();
 
+            $source = array_shift($codes);
+            if (in_array($source,$codes)) {
+                $ret[$source] = new Distance(0);
+            }
+
             foreach ($data as $pcode) {
-                if($pcode != $postal1) {
-                    $ret[$pcode->getPostalCode()] = $this->getDistance($postal1,$pcode);
+                if ($pcode != $postal1) {
+                    $ret[$pcode->getPostalCode()] = $this->getDistance($postal1, $pcode);
                 }
             }
 
