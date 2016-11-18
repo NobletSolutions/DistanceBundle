@@ -2,22 +2,23 @@
 
 namespace NS\DistanceBundle\Services;
 
-use \Doctrine\Common\Persistence\ObjectManager;
-use \Doctrine\ORM\EntityManager;
-use \NS\DistanceBundle\Entity\Distance;
-use \NS\DistanceBundle\Entity\GeographicPointInterface;
-use \NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
+use Doctrine\Common\Persistence\ObjectManager;
+use NS\DistanceBundle\Entity\Distance;
+use NS\DistanceBundle\Entity\GeographicPointInterface;
+use NS\DistanceBundle\Entity\PostalCode;
+use NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
 
 /**
  * @author gnat
  */
 class DistanceCalculator
 {
+    /** @var ObjectManager */
     private $entityMgr;
 
     /**
      *
-     * @param EntityManager $em
+     * @param ObjectManager $em
      */
     public function __construct(ObjectManager $em)
     {
@@ -29,6 +30,7 @@ class DistanceCalculator
      * 
      * @param $source GeographicPointInterface
      * @param $dest GeographicPointInterface
+     * @return Distance
      */
     public function getDistance(GeographicPointInterface $source, GeographicPointInterface $dest)
     {
@@ -85,12 +87,13 @@ class DistanceCalculator
 
         $postal2 = $data[$codes[1]];
 
-        return array($postal1->getPostalCode() => array($postal2->getPostalCode() => $this->getDistance($postal1,$postal2)));
+        return array($postal1->getPostalCode() => array($postal2->getPostalCode() => $this->getDistance($postal1, $postal2)));
     }
 
     /**
      * @param string $inPostal1
      * @param string|array $inPostal2
+     * @return array
      */
     public function adjustCodes($inPostal1, $inPostal2)
     {
