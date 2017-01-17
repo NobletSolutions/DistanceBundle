@@ -10,7 +10,8 @@
     convertWarningsToExceptions = "true"
     processIsolation            = "false"
     stopOnFailure               = "false"
-    syntaxCheck                 = "false" >
+    syntaxCheck                 = "false" 
+    bootstrap                   = "vendor/autoload.php">
 
     <testsuites>
         <testsuite name="Distance Bundle Tests">
@@ -24,12 +25,7 @@
 
     <filter>
         <whitelist>
-            <!--<directory>Command</directory>-->
-            <directory>Controller</directory>
-            <directory>Entity</directory>
-            <directory>Exceptions</directory>
-            <!-- <directory>Repositories</directory> -->
-            <directory>Services</directory>
+            <directory>src</directory>
         </whitelist>
     </filter>
 </phpunit>
