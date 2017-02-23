@@ -4,7 +4,7 @@ namespace NS\DistanceBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Table(name="postalcodes")
+ * @ORM\Table(name="postalcodes",uniqueConstraints={@ORM\UniqueConstraint(name="postal_code_idx", columns={"postal_code"})})
  * @ORM\Entity(repositoryClass="NS\DistanceBundle\Repositories\PostalCodeRepository")
  */
 class PostalCode implements GeographicPointInterface
