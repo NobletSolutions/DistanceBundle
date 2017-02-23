@@ -40,8 +40,8 @@ class PostalCodeChecker
                 $geometry = $response['results'][0]['geometry'];
 
                 $postalObj = new PostalCode();
-                $postalObj->setLongitude($geometry['location']['lat']);
-                $postalObj->setLatitude($geometry['location']['lng']);
+                $postalObj->setLongitude($geometry['location']['lng']);
+                $postalObj->setLatitude($geometry['location']['lat']);
                 $postalObj->setCity($response['results'][0]['address_components'][2]['short_name']);
                 $postalObj->setPostalCode($postalCode);
                 $postalObj->setProvince(isset($response['results'][0]['address_components'][4]['short_name']) ? $response['results'][0]['address_components'][4]['short_name'] : "AB");

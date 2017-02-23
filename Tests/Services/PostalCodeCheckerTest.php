@@ -30,8 +30,8 @@ class PostalCodeCheckerTest extends \PHPUnit_Framework_TestCase
         $service = new PostalCodeChecker($this->entityManager);
         $postCode = $service->getLatitudeAndLongitude('T3A5J4');
         $this->assertEquals('T3A5J4', $postCode->getPostalCode());
-        $this->assertEquals(-114.1077228,$postCode->getLatitude());
-        $this->assertEquals(51.149276800000003,$postCode->getLongitude());
+        $this->assertEquals(-114.1077228,$postCode->getLongitude());
+        $this->assertEquals(51.149276800000003,$postCode->getLatitude());
     }
 
     protected function setUp()
