@@ -3,6 +3,7 @@ VERSION 1  INITIAL RELEASE
 ==========================
 
    Version 1.0 - Initial release
+      22/02/2017 23:11  1.0.11  Fix long/lat swap
       22/02/2017 21:44  1.0.10  Postal code formatting
       11/02/2017 22:33  1.0.9  Additional sf3 compatibility fixes
       11/02/2017 22:00  1.0.8  Updated composer to allow sf3
