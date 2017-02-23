@@ -3,6 +3,7 @@ VERSION 1  INITIAL RELEASE
 ==========================
 
    Version 1.0 - Initial release
+      22/02/2017 21:44  1.0.10  Postal code formatting
       11/02/2017 22:33  1.0.9  Additional sf3 compatibility fixes
       11/02/2017 22:00  1.0.8  Updated composer to allow sf3
       18/11/2016 13:33  1.0.7  Fixed source=destination calculations
