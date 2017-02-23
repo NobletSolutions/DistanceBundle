@@ -70,7 +70,7 @@ class PostalCode implements GeographicPointInterface
      */
     public function setPostalCode($postalCode)
     {
-        $this->postalCode = $postalCode;
+        $this->postalCode = strtoupper(preg_replace('/\s+/', '', $postalCode));
 
         return $this;
     }
