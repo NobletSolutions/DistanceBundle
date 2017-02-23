@@ -5,6 +5,8 @@ namespace NS\DistanceBundle\Services;
 use Doctrine\Common\Persistence\ObjectManager;
 use NS\DistanceBundle\Entity\GeographicPointInterface;
 use NS\DistanceBundle\Entity\PostalCode;
+use NS\DistanceBundle\Exceptions\InvalidPostalCodeException;
+use NS\DistanceBundle\Validator\PostalCodeValidator;
 
 class PostalCodeChecker
 {
@@ -24,11 +26,17 @@ class PostalCodeChecker
 
     /**
      * @param $postalCode
+     *
+     * @throws InvalidPostalCodeException
      * @return GeographicPointInterface|null
      */
     public function getLatitudeAndLongitude($postalCode)
     {
         $cleanPostalCode = strtoupper(preg_replace('/\s+/', '', $postalCode));
+        if (!PostalCodeValidator::validate($cleanPostalCode)) {
+            throw new InvalidPostalCodeException();
+        }
+
         $postalObj = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCode($cleanPostalCode);
 
         if (!$postalObj) {
