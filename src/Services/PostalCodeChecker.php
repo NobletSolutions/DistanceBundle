@@ -32,6 +32,10 @@ class PostalCodeChecker
      */
     public function getLatitudeAndLongitude($postalCode)
     {
+        if (empty($postalCode)) {
+            return null;
+        }
+
         $cleanPostalCode = strtoupper(preg_replace('/\s+/', '', $postalCode));
         if (!PostalCodeValidator::validate($cleanPostalCode)) {
             throw new InvalidPostalCodeException();

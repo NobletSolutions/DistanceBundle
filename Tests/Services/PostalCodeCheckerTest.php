@@ -17,6 +17,7 @@ class PostalCodeCheckerTest extends \PHPUnit_Framework_TestCase
     {
         $postCode = new PostalCode();
         $this->repository->expects($this->once())->method('getByCode')->with('T3A5J4')->willReturn($postCode);
+        $this->entityManager->expects($this->once())->method('getRepository')->with('NSDistanceBundle:PostalCode')->willReturn($this->repository);
         $service = new PostalCodeChecker($this->entityManager);
         $this->assertEquals($postCode,$service->getLatitudeAndLongitude('T3A5J4'));
     }
@@ -24,6 +25,7 @@ class PostalCodeCheckerTest extends \PHPUnit_Framework_TestCase
     public function testResultIsNotInDB()
     {
         $this->repository->expects($this->once())->method('getByCode')->with('T3A5J4')->willReturn(null);
+        $this->entityManager->expects($this->once())->method('getRepository')->with('NSDistanceBundle:PostalCode')->willReturn($this->repository);
         $this->entityManager->expects($this->once())->method('persist');
         $this->entityManager->expects($this->once())->method('flush');
 
@@ -34,11 +36,22 @@ class PostalCodeCheckerTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(51.149276800000003,$postCode->getLatitude());
     }
 
+    public function testRequestIsEmpty()
+    {
+        $this->entityManager->expects($this->never())->method('getRepository')->with('NSDistanceBundle:PostalCode')->willReturn($this->repository);
+        $this->repository->expects($this->never())->method('getByCode')->willReturn(null);
+        $this->entityManager->expects($this->never())->method('persist');
+        $this->entityManager->expects($this->never())->method('flush');
+
+        $service = new PostalCodeChecker($this->entityManager);
+        $this->assertNull($service->getLatitudeAndLongitude(''));
+        $this->assertNull($service->getLatitudeAndLongitude(null));
+    }
+
     protected function setUp()
     {
         $this->repository = $this->getMockBuilder(PostalCodeRepository::class)->disableOriginalConstructor()->getMock();
 
         $this->entityManager = $this->getMockBuilder(ObjectManager::class)->disableOriginalConstructor()->getMock();
-        $this->entityManager->expects($this->once())->method('getRepository')->with('NSDistanceBundle:PostalCode')->willReturn($this->repository);
     }
 }
