@@ -17,6 +17,9 @@
     "autoload": {
         "psr-4": { "NS\\DistanceBundle\\": "src" }
     },
+    "require": {
+        "kzykhys/php-csv-parser": "^1.4"
+    },
     "autoload-dev": {
         "psr-4": { "NS\\DistanceBundle\\Tests\\": "Tests" }
     },

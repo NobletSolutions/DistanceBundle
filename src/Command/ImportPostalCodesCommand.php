@@ -28,21 +28,52 @@ class ImportPostalCodesCommand extends ContainerAwareCommand
 
         $file     = basename($path);
         $rFile    = rand(150, 1500);
-        $newFile  = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $rFile . $file;
-        $newFile2 = str_replace(".gz", "", $newFile);
+        $newFile  = $this->getContainer()->get('kernel')->getRootDir().DIRECTORY_SEPARATOR . '..'.DIRECTORY_SEPARATOR . $rFile . $file;
+        $dir = $this->getContainer()->get('kernel')->getRootDir().DIRECTORY_SEPARATOR . '..'.DIRECTORY_SEPARATOR . 'postal_codes'.DIRECTORY_SEPARATOR.'postalcodes'.uniqid();
+        $newFile2 = str_replace(".zip", "", $dir.DIRECTORY_SEPARATOR. 'CA.txt');
 
         copy($path, $newFile);
-        exec("gunzip $newFile");
+        exec("unzip $newFile -d $dir");
 
-        $output->writeln("Gunzip'd $newFile");
+        $output->writeln("Unzipped $newFile");
 
-        chmod($newFile2, 766);
+        chmod($newFile2, 777);
+
+        $parser = CsvParser::fromFile($newFile2, [
+            'delimiter' => "\t"
+        ]);
+        $results = $parser->parse();
 
         $con  = $this->getContainer()->get('doctrine.orm.entity_manager')->getConnection();
+        $output->writeln("Truncating postal codes.");
         $con->exec("TRUNCATE postalcodes");
-        $rows = $con->exec("LOAD DATA INFILE '$newFile2' INTO TABLE postalcodes FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' (postal_code,latitude,longitude,city,province);");
 
-        $output->writeln("Loaded $rows rows");
+        $progressBar = new ProgressBar($output, count($results));
+        $output->writeln("Loading rows:");
+        $progressBar->start();
+        $i = 0;
+        $x = 0;
+        foreach($results as $result)
+        {
+            try
+            {
+                $stmt  = $con->prepare("REPLACE INTO postalcodes (city, province, postal_code, latitude, longitude) VALUES (?, ?, ?, ?, ?);");
+                $stmt->execute([$result[2], $result[4], $result[1], $result[9], $result[10]]);
+                $progressBar->advance();
+                $i++;
+            }
+            catch(DBALException $exception)
+            {
+                $output->writeln('Unable to load row. '.$exception->getMessage());
+                $x++;
+                continue;
+            }
+        }
+
+        $progressBar->finish();
+        $output->writeln('');
+
+        $output->writeln("Loaded $i rows, $x failed");
     }
 }
 

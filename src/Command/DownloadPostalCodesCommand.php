@@ -11,14 +11,14 @@ class DownloadPostalCodesCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this->setName('distance:download')
-           ->setDescription('Download Postal Codes')
-           ->setDefinition(array());
+            ->setDescription('Download Postal Codes')
+            ->setDefinition(array());
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $filename = $this->getContainer()->get('kernel')->getRootDir()."/../Canada.csv.gz";
+        $filename = $this->getContainer()->get('kernel')->getRootDir()."/../Canada.txt.zip";
 
-        exec("wget -O $filename http://geocoder.ca/onetimedownload/Canada.csv.gz");
+        exec("wget -O $filename http://download.geonames.org/export/zip/CA.zip");
     }
 }
