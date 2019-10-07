@@ -20,7 +20,7 @@ class PostalCode implements GeographicPointInterface
     
     /**
      * @var string $postalCode
-     * @ORM\Column(name="postal_code",type="string")
+     * @ORM\Column(name="postal_code",type="string",length=64)
      */
     private $postalCode;
 

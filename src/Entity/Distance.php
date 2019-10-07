@@ -2,11 +2,6 @@
 
 namespace NS\DistanceBundle\Entity;
 
-/**
- * Description of Distance
- *
- * @author gnat
- */
 class Distance
 {
     const KM            = 'K';
