@@ -1,9 +1,12 @@
 services:
+  NS\DistanceBundle\Services\PostalCodeChecker:
+    arguments: [ "@doctrine.orm.entity_manager" ]
+
   ns_distance.postalcode_checker:
-    class: NS\DistanceBundle\Services\PostalCodeChecker
+    alias: NS\DistanceBundle\Services\PostalCodeChecker
+
+  NS\DistanceBundle\Services\DistanceCalculator:
     arguments: [ "@doctrine.orm.entity_manager" ]
 
   ns_distance.calculator:
-    class: NS\DistanceBundle\Services\DistanceCalculator
-    arguments: [ "@doctrine.orm.entity_manager" ]
-
+    alias: NS\DistanceBundle\Services\DistanceCalculator
