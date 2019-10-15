@@ -3,6 +3,7 @@ VERSION 3  USE SYMFONY/HTTP-CLIENT
 ==================================
 
    Version 3.0 - Use symfony/http-client
+      15/10/2019 13:33  3.0.1  Updated services file
       15/10/2019 13:09  3.0.0  initial release
 
 VERSION 2  UPDATED TO SUPPORT NEW POSTAL CODE DATA SOURCE
