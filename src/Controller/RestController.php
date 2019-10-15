@@ -2,9 +2,9 @@
 
 namespace NS\DistanceBundle\Controller;
 
-use \NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
-use \Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use \Symfony\Component\HttpFoundation\Response;
+use NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\Response;
 
 class RestController extends Controller
 {

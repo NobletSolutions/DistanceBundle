@@ -11,13 +11,12 @@ class Distance
     public $distance;
 
     /**
-     *
      * @param double $distanceInMiles
      */
     public function __construct($distanceInMiles = null)
     {
         $this->distance = array();
-        if(!is_null($distanceInMiles) && is_numeric($distanceInMiles)) {
+        if($distanceInMiles !== null && is_numeric($distanceInMiles)) {
             $this->setDistance ($distanceInMiles);
         }
     }
@@ -30,7 +29,7 @@ class Distance
      */
     public function getDistance($unit = self::KM)
     {
-        if(!isset($this->distance[$unit])){
+        if (!isset($this->distance[$unit])){
             throw new \InvalidArgumentException("Unit of measurement $unit is invalid");
         }
    
@@ -59,7 +58,7 @@ class Distance
                 break;
         }
 
-        return sprintf("%01.2f %s",$this->getDistance($unit),$str);
+        return sprintf('%01.2f %s',$this->getDistance($unit),$str);
     }
 
     /**

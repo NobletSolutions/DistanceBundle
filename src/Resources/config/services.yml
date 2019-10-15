@@ -1,6 +1,6 @@
 services:
   NS\DistanceBundle\Services\PostalCodeChecker:
-    arguments: [ "@doctrine.orm.entity_manager" ]
+    arguments: [ "@doctrine.orm.entity_manager", '%ns_distance.api_key%' ]
 
   ns_distance.postalcode_checker:
     alias: NS\DistanceBundle\Services\PostalCodeChecker

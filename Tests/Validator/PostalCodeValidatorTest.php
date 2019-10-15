@@ -1,16 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gnat
- * Date: 23/02/17
- * Time: 10:33 AM
- */
 
 namespace NS\DistanceBundle\Tests\Validator;
 
 use NS\DistanceBundle\Validator\PostalCodeValidator;
+use PHPUnit\Framework\TestCase;
 
-class PostalCodeValidatorTest extends \PHPUnit_Framework_TestCase
+class PostalCodeValidatorTest extends TestCase
 {
     /**
      * @param string $code

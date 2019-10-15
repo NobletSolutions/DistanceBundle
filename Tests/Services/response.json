@@ -1,0 +1,69 @@
+{
+  "results" : [
+    {
+      "address_components" : [
+        {
+          "long_name" : "T3A 5J4",
+          "short_name" : "T3A 5J4",
+          "types" : [ "postal_code" ]
+        },
+        {
+          "long_name" : "Hidden Valley",
+          "short_name" : "Hidden Valley",
+          "types" : [ "neighborhood", "political" ]
+        },
+        {
+          "long_name" : "Calgary",
+          "short_name" : "Calgary",
+          "types" : [ "locality", "political" ]
+        },
+        {
+          "long_name" : "Division No. 6",
+          "short_name" : "Division No. 6",
+          "types" : [ "administrative_area_level_2", "political" ]
+        },
+        {
+          "long_name" : "Alberta",
+          "short_name" : "AB",
+          "types" : [ "administrative_area_level_1", "political" ]
+        },
+        {
+          "long_name" : "Canada",
+          "short_name" : "CA",
+          "types" : [ "country", "political" ]
+        }
+      ],
+      "formatted_address" : "Calgary, AB T3A 5J4, Canada",
+      "geometry" : {
+        "bounds" : {
+          "northeast" : {
+            "lat" : 51.150279,
+            "lng" : -114.1061905
+          },
+          "southwest" : {
+            "lat" : 51.1481599,
+            "lng" : -114.1101207
+          }
+        },
+        "location" : {
+          "lat" : 51.1492768,
+          "lng" : -114.1077228
+        },
+        "location_type" : "APPROXIMATE",
+        "viewport" : {
+          "northeast" : {
+            "lat" : 51.15056843029151,
+            "lng" : -114.1061905
+          },
+          "southwest" : {
+            "lat" : 51.14787046970851,
+            "lng" : -114.1101207
+          }
+        }
+      },
+      "place_id" : "ChIJd-l320BmcVMRqupKWBOXQF0",
+      "types" : [ "postal_code" ]
+    }
+  ],
+  "status" : "OK"
+}

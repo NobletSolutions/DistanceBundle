@@ -9,7 +9,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class CalculateCommand extends ContainerAwareCommand
 {
-
     protected function configure()
     {
         $this->setName('distance:calculate')
@@ -36,7 +35,7 @@ class CalculateCommand extends ContainerAwareCommand
         $distance = $this->getContainer()->get('ns_distance.calculator')->getDistanceBetweenPostalCodes($source, $dest);
 
         foreach ($distance[$source] as $dest => $calc) {
-            $output->writeln(sprintf("The distance between %s and %s is %s KM", $source, $dest, $calc['distance']->getDistance()));
+            $output->writeln(sprintf('The distance between %s and %s is %s KM', $source, $dest, $calc['distance']->getDistance()));
         }
     }
 }

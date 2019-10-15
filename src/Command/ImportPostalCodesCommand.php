@@ -2,12 +2,12 @@
 
 namespace NS\DistanceBundle\Command;
 
-use \Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Helper\ProgressBar;
-use \Symfony\Component\Console\Input\InputArgument;
-use \Symfony\Component\Console\Input\InputInterface;
-use \Symfony\Component\Console\Output\OutputInterface;
-use \KzykHys\CsvParser\CsvParser;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use KzykHys\CsvParser\CsvParser;
 
 class ImportPostalCodesCommand extends ContainerAwareCommand
 {
@@ -25,14 +25,15 @@ class ImportPostalCodesCommand extends ContainerAwareCommand
     {
         $path = $input->getArgument('file');
         if (!is_file($path)) {
-            throw new \Exception("Path not found: $path");
+            $output->writeln("<error>Path not found: $path</error>");
+            return -1;
         }
 
         $file     = basename($path);
-        $rFile    = rand(150, 1500);
+        $rFile    = mt_rand(150, 1500);
         $newFile  = $this->getContainer()->get('kernel')->getRootDir().DIRECTORY_SEPARATOR . '..'.DIRECTORY_SEPARATOR . $rFile . $file;
-        $dir = $this->getContainer()->get('kernel')->getRootDir().DIRECTORY_SEPARATOR . '..'.DIRECTORY_SEPARATOR . 'postal_codes'.DIRECTORY_SEPARATOR.'postalcodes'.uniqid();
-        $newFile2 = str_replace(".zip", "", $dir.DIRECTORY_SEPARATOR. 'CA.txt');
+        $dir = $this->getContainer()->get('kernel')->getRootDir().DIRECTORY_SEPARATOR . '..'.DIRECTORY_SEPARATOR . 'postal_codes'.DIRECTORY_SEPARATOR.'postalcodes'.uniqid('pc', true);
+        $newFile2 = str_replace('.zip', '', $dir.DIRECTORY_SEPARATOR. 'CA.txt');
 
         copy($path, $newFile);
         exec("unzip $newFile -d $dir");
@@ -47,11 +48,11 @@ class ImportPostalCodesCommand extends ContainerAwareCommand
         $results = $parser->parse();
 
         $con  = $this->getContainer()->get('doctrine.orm.entity_manager')->getConnection();
-        $output->writeln("Truncating postal codes.");
-        $con->exec("TRUNCATE postalcodes");
+        $output->writeln('Truncating postal codes.');
+        $con->exec('TRUNCATE postalcodes');
 
         $progressBar = new ProgressBar($output, count($results));
-        $output->writeln("Loading rows:");
+        $output->writeln('Loading rows:');
         $progressBar->start();
         $i = 0;
         $x = 0;
@@ -59,7 +60,7 @@ class ImportPostalCodesCommand extends ContainerAwareCommand
         {
             try
             {
-                $stmt  = $con->prepare("REPLACE INTO postalcodes (city, province, postal_code, latitude, longitude) VALUES (?, ?, ?, ?, ?);");
+                $stmt  = $con->prepare('REPLACE INTO postalcodes (city, province, postal_code, latitude, longitude) VALUES (?, ?, ?, ?, ?);');
                 $stmt->execute([$result[2], $result[4], $result[1], $result[9], $result[10]]);
                 $progressBar->advance();
                 $i++;

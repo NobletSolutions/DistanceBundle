@@ -2,33 +2,36 @@
 
 namespace NS\DistanceBundle\Services;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use NS\DistanceBundle\Entity\GeographicPointInterface;
 use NS\DistanceBundle\Entity\PostalCode;
 use NS\DistanceBundle\Exceptions\InvalidPostalCodeException;
 use NS\DistanceBundle\Validator\PostalCodeValidator;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class PostalCodeChecker
 {
-    /**
-     * @var ObjectManager
-     */
+    /** @var HttpClientInterface */
+    private $client;
+
+    /** @var EntityManagerInterface */
     private $entityMgr;
 
-    /**
-     * PostalCodeChecker constructor.
-     * @param $entityMgr
-     */
-    public function __construct(ObjectManager $entityMgr)
+    /** @var string */
+    private $key;
+
+    public function __construct(EntityManagerInterface $entityMgr, HttpClientInterface $client, string $apiKey)
     {
         $this->entityMgr = $entityMgr;
+        $this->key       = $apiKey;
+        $this->client    = $client;
     }
 
     /**
      * @param $postalCode
      *
-     * @throws InvalidPostalCodeException
      * @return GeographicPointInterface|null
+     * @throws InvalidPostalCodeException
      */
     public function getLatitudeAndLongitude($postalCode)
     {
@@ -44,11 +47,11 @@ class PostalCodeChecker
         $postalObj = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCode($cleanPostalCode);
 
         if (!$postalObj) {
-            $url = sprintf('http://maps.googleapis.com/maps/api/geocode/json?components=postal_code:%s&sensor=false', $cleanPostalCode);
-            $result = file_get_contents($url);
-            $response = json_decode($result, true);
+            $url      = sprintf('https://maps.googleapis.com/maps/api/geocode/json?components=postal_code:%s&sensor=false&key=%s', $cleanPostalCode, $this->key);
+            $result   = $this->client->request('GET', $url);
+            $response = json_decode($result->getContent(), true);
 
-            if ($response['status'] == 'OK') {
+            if ($response['status'] === 'OK') {
                 $geometry = $response['results'][0]['geometry'];
 
                 $postalObj = new PostalCode();
@@ -56,10 +59,10 @@ class PostalCodeChecker
                 $postalObj->setLatitude($geometry['location']['lat']);
                 $postalObj->setCity($response['results'][0]['address_components'][2]['short_name']);
                 $postalObj->setPostalCode($cleanPostalCode);
-                $postalObj->setProvince(isset($response['results'][0]['address_components'][4]['short_name']) ? $response['results'][0]['address_components'][4]['short_name'] : "AB");
+                $postalObj->setProvince($response['results'][0]['address_components'][4]['short_name'] ?? 'AB');
 
                 $this->entityMgr->persist($postalObj);
-                $this->entityMgr->flush($postalObj);
+                $this->entityMgr->flush();
             }
         }
 

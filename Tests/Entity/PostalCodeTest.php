@@ -1,17 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: gnat
- * Date: 2017-02-22
- * Time: 9:36 PM
- */
 
 namespace NS\DistanceBundle\Tests\Entity;
 
-
 use NS\DistanceBundle\Entity\PostalCode;
+use PHPUnit\Framework\TestCase;
 
-class PostalCodeTest extends \PHPUnit_Framework_TestCase
+class PostalCodeTest extends TestCase
 {
     /**
      * @param $input
@@ -19,14 +13,14 @@ class PostalCodeTest extends \PHPUnit_Framework_TestCase
      *
      * @dataProvider getPostalCodes
      */
-    public function testFixPostalCodes($input, $output)
+    public function testFixPostalCodes($input, $output): void
     {
         $obj = new PostalCode();
         $obj->setPostalCode($input);
         $this->assertEquals($output,$obj->getPostalCode());
     }
 
-    public function getPostalCodes()
+    public function getPostalCodes(): array
     {
         return array(
             array('T3A 5J4','T3A5J4'),

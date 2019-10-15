@@ -2,10 +2,6 @@
 
 namespace NS\DistanceBundle\Entity;
 
-/**
- *
- * @author gnat
- */
 interface GeographicPointInterface
 {
     public function getLatitude();

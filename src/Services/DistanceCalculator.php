@@ -8,18 +8,11 @@ use NS\DistanceBundle\Entity\GeographicPointInterface;
 use NS\DistanceBundle\Entity\PostalCode;
 use NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
 
-/**
- * @author gnat
- */
 class DistanceCalculator
 {
     /** @var ObjectManager */
     private $entityMgr;
 
-    /**
-     *
-     * @param ObjectManager $em
-     */
     public function __construct(ObjectManager $em)
     {
         $this->entityMgr = $em;

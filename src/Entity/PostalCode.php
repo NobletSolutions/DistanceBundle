@@ -10,7 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 class PostalCode implements GeographicPointInterface
 {
     /**
-     *
      * @var integer $id
      * @ORM\Column(name="id",type="integer")
      * @ORM\Id

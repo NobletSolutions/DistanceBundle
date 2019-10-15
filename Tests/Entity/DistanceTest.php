@@ -2,12 +2,9 @@
 
 namespace NS\DistanceBundle\Tests\Entity;
 
-/**
- * Description of DistanceTest
- *
- * @author gnat
- */
-class DistanceTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class DistanceTest extends TestCase
 {
     public function testDistanceEntity()
     {
