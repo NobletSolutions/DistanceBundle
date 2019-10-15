@@ -20,9 +20,10 @@ class DistanceCalculator
 
     /**
      * This routine calculates the distance between two points
-     * 
+     *
      * @param $source GeographicPointInterface
-     * @param $dest GeographicPointInterface
+     * @param $dest   GeographicPointInterface
+     *
      * @return Distance
      */
     public function getDistance(GeographicPointInterface $source, GeographicPointInterface $dest)
@@ -35,24 +36,25 @@ class DistanceCalculator
 
     /**
      *
-     * @param string $inPostal1
+     * @param string       $inPostal1
      * @param string|array $inPostal2
+     *
      * @return array
      */
-    public function getDistanceBetweenPostalCodes($inPostal1, $inPostal2)
+    public function getDistanceBetweenPostalCodes($inPostal1, $inPostal2): array
     {
         $codes = $this->adjustCodes($inPostal1, $inPostal2);
 
         // When we are comparing two identical postal codes inPostal2 is a string
         if (is_string($inPostal2) && $codes[0] == $codes[1]) {
-            return array($inPostal1 => array($inPostal1 => new Distance(0)));
+            return [$inPostal1 => [$inPostal1 => new Distance(0)]];
         }
 
         /** @var PostalCode[] $data */
         $data = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
 
         if (count($data) < 2) {
-            return array();
+            return [];
         }
 
         if (!isset($data[$codes[0]])) {
@@ -62,33 +64,34 @@ class DistanceCalculator
         $postal1 = $data[$codes[0]];
 
         if (is_array($inPostal2)) {
-            $ret = array();
+            $ret = [];
 
             $source = array_shift($codes);
-            if (in_array($source,$codes)) {
+            if (in_array($source, $codes)) {
                 $ret[$source] = new Distance(0);
             }
 
             foreach ($data as $pcode) {
-                if ($pcode != $postal1) {
+                if ($pcode !== $postal1) {
                     $ret[$pcode->getPostalCode()] = $this->getDistance($postal1, $pcode);
                 }
             }
 
-            return array($postal1->getPostalCode() => $ret);
+            return [$postal1->getPostalCode() => $ret];
         }
 
         $postal2 = $data[$codes[1]];
 
-        return array($postal1->getPostalCode() => array($postal2->getPostalCode() => $this->getDistance($postal1, $postal2)));
+        return [$postal1->getPostalCode() => [$postal2->getPostalCode() => $this->getDistance($postal1, $postal2)]];
     }
 
     /**
-     * @param string $inPostal1
+     * @param string       $inPostal1
      * @param string|array $inPostal2
+     *
      * @return array
      */
-    public function adjustCodes($inPostal1, $inPostal2)
+    public function adjustCodes(string $inPostal1, $inPostal2): array
     {
         $postal1 = $this->cleanCode($inPostal1);
         if (is_array($inPostal2)) {
@@ -96,19 +99,14 @@ class DistanceCalculator
                 $postalCode = $this->cleanCode($postalCode);
             }
 
-            return array_merge(array($postal1), $inPostal2);
+            return array_merge([$postal1], $inPostal2);
         }
 
         $postal2 = $this->cleanCode($inPostal2);
-        return array($postal1, $postal2);
+        return [$postal1, $postal2];
     }
 
-    /**
-     *
-     * @param string $code
-     * @return string
-     */
-    public function cleanCode($code)
+    public function cleanCode(string $code): string
     {
         return strtoupper(preg_replace('/\s+/', '', $code));
     }

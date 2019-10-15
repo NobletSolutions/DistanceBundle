@@ -1,5 +1,4 @@
-ns_distance_rest:
-    path:  /rest/distance/{postalcode1}/{postalcode2}
-    defaults: { _controller: NSDistanceBundle:Rest:get, _format: json }
-    requirements:
-        _method: GET
+ns_distance_routes:
+    resource: "@NSDistanceBundle/Controller"
+    prefix:   /
+    type: annotation

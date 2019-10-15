@@ -1,12 +1,26 @@
 services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+
+  NS\DistanceBundle\:
+    resource: '../../'
+    exclude:
+      - '../../DependencyInjection'
+      - '../../Entity'
+
+  NS\DistanceBundle\Controller\:
+    resource: '../../Controller'
+    tags: ['controller.service_arguments']
+
   NS\DistanceBundle\Services\PostalCodeChecker:
-    arguments: [ "@doctrine.orm.entity_manager", '%ns_distance.api_key%' ]
+    arguments:
+      $apiKey: '%ns_distance.api_key%'
 
   ns_distance.postalcode_checker:
     alias: NS\DistanceBundle\Services\PostalCodeChecker
-
-  NS\DistanceBundle\Services\DistanceCalculator:
-    arguments: [ "@doctrine.orm.entity_manager" ]
+    public: true
 
   ns_distance.calculator:
     alias: NS\DistanceBundle\Services\DistanceCalculator
+    public: true
