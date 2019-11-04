@@ -3,6 +3,7 @@ VERSION 3  USE SYMFONY/HTTP-CLIENT
 ==================================
 
    Version 3.0 - Use symfony/http-client
+      04/11/2019 11:40  3.0.2  Handle calculating from same postal code
       15/10/2019 13:33  3.0.1  Updated services file
       15/10/2019 13:09  3.0.0  initial release
 
