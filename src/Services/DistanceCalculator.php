@@ -46,7 +46,13 @@ class DistanceCalculator
         $codes = $this->adjustCodes($inPostal1, $inPostal2);
 
         // When we are comparing two identical postal codes inPostal2 is a string
-        if (is_string($inPostal2) && $codes[0] == $codes[1]) {
+        if (is_string($inPostal2) && $codes[0] === $codes[1]) {
+            return [$inPostal1 => [$inPostal1 => new Distance(0)]];
+        }
+
+        // We have only one postal code distance is 0
+        $uniq = array_unique($codes);
+        if (count($uniq) === 1) {
             return [$inPostal1 => [$inPostal1 => new Distance(0)]];
         }
 
