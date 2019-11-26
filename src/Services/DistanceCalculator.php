@@ -2,7 +2,7 @@
 
 namespace NS\DistanceBundle\Services;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\ORM\EntityManagerInterface;
 use NS\DistanceBundle\Entity\Distance;
 use NS\DistanceBundle\Entity\GeographicPointInterface;
 use NS\DistanceBundle\Entity\PostalCode;
@@ -10,10 +10,10 @@ use NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
 
 class DistanceCalculator
 {
-    /** @var ObjectManager */
+    /** @var EntityManagerInterface */
     private $entityMgr;
 
-    public function __construct(ObjectManager $em)
+    public function __construct(EntityManagerInterface $em)
     {
         $this->entityMgr = $em;
     }
