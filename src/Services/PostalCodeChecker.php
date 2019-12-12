@@ -62,7 +62,6 @@ class PostalCodeChecker
                 $postalObj->setProvince($response['results'][0]['address_components'][4]['short_name'] ?? 'AB');
 
                 $this->entityMgr->persist($postalObj);
-                $this->entityMgr->flush();
             }
         }
 
