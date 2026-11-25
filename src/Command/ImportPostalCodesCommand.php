@@ -5,6 +5,7 @@ namespace NS\DistanceBundle\Command;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\ORM\EntityManagerInterface;
+use NS\DistanceBundle\Validator\PostalCodeValidator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
@@ -61,7 +62,13 @@ class ImportPostalCodesCommand extends Command
                     return Command::FAILURE;
                 }
 
-                $rows[] = [$row[2], $row[4], $row[1], $row[9], $row[10]];
+                $code = PostalCodeValidator::normalize($row[1]);
+                if ($code === '') {
+                    $output->writeln('CA.txt contains an empty postal code.');
+                    return Command::FAILURE;
+                }
+
+                $rows[$code] = [$row[2], $row[4], $code, $row[9], $row[10]];
             }
         } finally {
             fclose($stream);
@@ -75,22 +82,36 @@ class ImportPostalCodesCommand extends Command
 
         $connection = $this->entityManager->getConnection();
         $progressBar = new ProgressBar($output, count($rows));
-        $output->writeln('Replacing postal codes.');
+        $output->writeln('Refreshing postal codes.');
         $progressBar->start();
 
         try {
-            $connection->transactional(static function (Connection $connection) use ($rows, $progressBar): void {
-                $connection->executeStatement('DELETE FROM postalcodes');
+            $loaded = $connection->transactional(static function (Connection $connection) use ($rows, $progressBar): int {
+                // The archive primarily contains Canadian prefixes. Full-code rows may be cached geocodes.
+                $connection->executeStatement('DELETE FROM postalcodes WHERE LENGTH(postal_code) = 3');
                 $statement = $connection->prepare(
-                    'REPLACE INTO postalcodes (city, province, postal_code, latitude, longitude) VALUES (?, ?, ?, ?, ?)'
+                    'INSERT INTO postalcodes (city, province, postal_code, latitude, longitude) VALUES (?, ?, ?, ?, ?)'
                 );
+                $loaded = 0;
                 foreach ($rows as $row) {
+                    $code = $row[2];
+                    if (strlen($code) !== 3 && $connection->fetchOne(
+                        'SELECT 1 FROM postalcodes WHERE postal_code IN (?, ?)',
+                        [$code, PostalCodeValidator::formatCanadianCode($code) ?? $code]
+                    ) !== false) {
+                        $progressBar->advance();
+                        continue;
+                    }
+
                     foreach ($row as $index => $value) {
                         $statement->bindValue($index + 1, $value);
                     }
                     $statement->executeStatement();
+                    $loaded++;
                     $progressBar->advance();
                 }
+
+                return $loaded;
             });
         } catch (DBALException $exception) {
             $output->writeln(['', 'Unable to import postal codes. '.$exception->getMessage()]);
@@ -98,7 +119,7 @@ class ImportPostalCodesCommand extends Command
         }
 
         $progressBar->finish();
-        $output->writeln(['', sprintf('Loaded %d rows', count($rows))]);
+        $output->writeln(['', sprintf('Loaded %d rows', $loaded)]);
 
         return Command::SUCCESS;
     }

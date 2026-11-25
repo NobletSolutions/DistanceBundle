@@ -39,30 +39,57 @@ class PostalCodeChecker
             return null;
         }
 
-        $cleanPostalCode = strtoupper(preg_replace('/\s+/', '', $postalCode));
+        $cleanPostalCode = PostalCodeValidator::normalize($postalCode);
         if (!PostalCodeValidator::validate($cleanPostalCode)) {
             throw new InvalidPostalCodeException();
         }
 
         $postalObj = $this->entityMgr->getRepository(PostalCode::class)->getByCode($cleanPostalCode);
+        if ($postalObj !== null) {
+            return $postalObj;
+        }
 
-        if (!$postalObj) {
-            $url      = sprintf('https://maps.googleapis.com/maps/api/geocode/json?components=postal_code:%s&sensor=false&key=%s', $cleanPostalCode, $this->key);
-            $result   = $this->client->request('GET', $url);
-            $response = json_decode($result->getContent(), true);
-
-            if ($response['status'] === 'OK') {
-                $geometry = $response['results'][0]['geometry'];
-
-                $postalObj = new PostalCode();
-                $postalObj->setLongitude($geometry['location']['lng']);
-                $postalObj->setLatitude($geometry['location']['lat']);
-                $postalObj->setCity($response['results'][0]['address_components'][2]['short_name']);
-                $postalObj->setPostalCode($cleanPostalCode);
-                $postalObj->setProvince($response['results'][0]['address_components'][4]['short_name'] ?? 'AB');
-
-                $this->entityMgr->persist($postalObj);
+        foreach ($this->entityMgr->getUnitOfWork()->getScheduledEntityInsertions() as $pending) {
+            if ($pending instanceof PostalCode && $pending->getPostalCode() === $cleanPostalCode) {
+                return $pending;
             }
+        }
+
+        $url = sprintf('https://maps.googleapis.com/maps/api/geocode/json?components=postal_code:%s&sensor=false&key=%s', $cleanPostalCode, $this->key);
+        $result = $this->client->request('GET', $url);
+        $response = json_decode($result->getContent(), true);
+        $match = $response['results'][0] ?? [];
+        $location = $match['geometry']['location'] ?? [];
+        if (($response['status'] ?? null) !== 'OK'
+            || !is_numeric($location['lat'] ?? null)
+            || !is_numeric($location['lng'] ?? null)) {
+            return null;
+        }
+
+        $components = [];
+        foreach ($match['address_components'] ?? [] as $component) {
+            $name = $component['short_name'] ?? $component['long_name'] ?? '';
+            if ($name === '') {
+                continue;
+            }
+
+            foreach ($component['types'] ?? [] as $type) {
+                $components[$type] = $components[$type] ?? $name;
+            }
+        }
+
+        $city = $components['locality'] ?? $components['postal_town'] ?? null;
+        $province = $components['administrative_area_level_1'] ?? null;
+        $postalObj = (new PostalCode())
+            ->setPostalCode($cleanPostalCode)
+            ->setLongitude($location['lng'])
+            ->setLatitude($location['lat'])
+            ->setCity($city)
+            ->setProvince($province);
+
+        // The postal code table requires a city and a province.
+        if ($city !== null && $province !== null) {
+            $this->entityMgr->persist($postalObj);
         }
 
         return $postalObj;

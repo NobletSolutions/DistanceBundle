@@ -7,6 +7,7 @@ use NS\DistanceBundle\Entity\Distance;
 use NS\DistanceBundle\Entity\GeographicPointInterface;
 use NS\DistanceBundle\Entity\PostalCode;
 use NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
+use NS\DistanceBundle\Validator\PostalCodeValidator;
 
 class DistanceCalculator
 {
@@ -28,10 +29,14 @@ class DistanceCalculator
      */
     public function getDistance(GeographicPointInterface $source, GeographicPointInterface $dest)
     {
-        $theta = $source->getLongitude() - $dest->getLongitude();
-        $dist  = rad2deg(acos(sin(deg2rad($source->getLatitude())) * sin(deg2rad($dest->getLatitude())) + cos(deg2rad($source->getLatitude())) * cos(deg2rad($dest->getLatitude())) * cos(deg2rad($theta))));
+        $sourceLatitude = deg2rad($source->getLatitude());
+        $destLatitude = deg2rad($dest->getLatitude());
+        $halfLongitudeDifference = deg2rad($dest->getLongitude() - $source->getLongitude()) / 2;
+        $haversine = sin(($destLatitude - $sourceLatitude) / 2) ** 2
+            + cos($sourceLatitude) * cos($destLatitude) * sin($halfLongitudeDifference) ** 2;
+        $degrees = rad2deg(2 * asin(sqrt(min(1, max(0, $haversine)))));
 
-        return new Distance($dist * 60 * 1.1515);
+        return new Distance($degrees * 60 * 1.1515);
     }
 
     /**
@@ -45,50 +50,29 @@ class DistanceCalculator
     {
         $codes = $this->adjustCodes($inPostal1, $inPostal2);
 
-        // When we are comparing two identical postal codes inPostal2 is a string
-        if (is_string($inPostal2) && $codes[0] === $codes[1]) {
+        if (count(array_unique($codes)) === 1) {
             return [$inPostal1 => [$inPostal1 => new Distance(0)]];
         }
 
-        // We have only one postal code distance is 0
-        $uniq = array_unique($codes);
-        if (count($uniq) === 1) {
-            return [$inPostal1 => [$inPostal1 => new Distance(0)]];
-        }
+        $points = $this->entityMgr->getRepository(PostalCode::class)->getByCodesWithPrefixFallback($codes);
+        $sourceCode = array_shift($codes);
 
-        /** @var PostalCode[] $data */
-        $data = $this->entityMgr->getRepository(PostalCode::class)->getByCodes($codes);
-
-        if (count($data) < 2) {
-            return [];
-        }
-
-        if (!isset($data[$codes[0]])) {
-            throw new UnknownPostalCodeException(sprintf("Source postalcode '%s/%s' not found", $inPostal1, $codes[0]));
-        }
-
-        $postal1 = $data[$codes[0]];
-
-        if (is_array($inPostal2)) {
-            $ret = [];
-
-            $source = array_shift($codes);
-            if (in_array($source, $codes)) {
-                $ret[$source] = new Distance(0);
+        if (!isset($points[$sourceCode])) {
+            if (count($points) < 2) {
+                return [];
             }
 
-            foreach ($data as $pcode) {
-                if ($pcode !== $postal1) {
-                    $ret[$pcode->getPostalCode()] = $this->getDistance($postal1, $pcode);
-                }
-            }
-
-            return [$postal1->getPostalCode() => $ret];
+            throw new UnknownPostalCodeException(sprintf("Source postalcode '%s/%s' not found", $inPostal1, $sourceCode));
         }
 
-        $postal2 = $data[$codes[1]];
+        $distances = [];
+        foreach (array_unique($codes) as $code) {
+            if (isset($points[$code])) {
+                $distances[$code] = $this->getDistance($points[$sourceCode], $points[$code]);
+            }
+        }
 
-        return [$postal1->getPostalCode() => [$postal2->getPostalCode() => $this->getDistance($postal1, $postal2)]];
+        return $distances === [] ? [] : [$sourceCode => $distances];
     }
 
     /**
@@ -114,7 +98,7 @@ class DistanceCalculator
 
     public function cleanCode(string $code): string
     {
-        return strtoupper(preg_replace('/\s+/', '', $code));
+        return PostalCodeValidator::normalize($code);
     }
 }
 

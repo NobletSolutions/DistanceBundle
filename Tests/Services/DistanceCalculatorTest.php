@@ -19,7 +19,7 @@ class DistanceCalculatorTest extends TestCase
         $repo = $this->createMock(PostalCodeRepository::class);
 
         $repo->expects($this->once())
-            ->method('getByCodes')
+            ->method('getByCodesWithPrefixFallback')
             ->with(array('T3A5J4', 'T2L0W2', 'T3A0A1'))
             ->willReturn($this->getPostalCodesObjects(true));
 
@@ -46,7 +46,7 @@ class DistanceCalculatorTest extends TestCase
         $repo = $this->createMock(PostalCodeRepository::class);
 
         $repo->expects($this->once())
-            ->method('getByCodes')
+            ->method('getByCodesWithPrefixFallback')
             ->with(array('T3A5J4', 'T2L0W2'))
             ->willReturn($this->getPostalCodesObjects());
 
@@ -71,7 +71,7 @@ class DistanceCalculatorTest extends TestCase
         $repo = $this->createMock(PostalCodeRepository::class);
 
         $repo->expects($this->once())
-            ->method('getByCodes')
+            ->method('getByCodesWithPrefixFallback')
             ->with(array('T3A5J4', 'T2L0W2'))
             ->willReturn(array());
 
@@ -108,7 +108,7 @@ class DistanceCalculatorTest extends TestCase
         $repo = $this->createMock(PostalCodeRepository::class);
 
         $repo->expects($this->once())
-            ->method('getByCodes')
+            ->method('getByCodesWithPrefixFallback')
             ->with(array('T3A5J4', 'T2L0W2', 'T3A5J4'))
             ->willReturn($this->getPostalCodesObjects());
 
@@ -173,7 +173,7 @@ class DistanceCalculatorTest extends TestCase
         $repo = $this->createMock(PostalCodeRepository::class);
 
         $repo->expects($this->once())
-            ->method('getByCodes')
+            ->method('getByCodesWithPrefixFallback')
             ->with(array('H0H0H0', 'T2A6J3'))
             ->willReturn($this->getPostalCodesObjects());
 

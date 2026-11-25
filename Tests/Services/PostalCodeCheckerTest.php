@@ -3,6 +3,7 @@
 namespace NS\DistanceBundle\Tests\Services;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\UnitOfWork;
 use NS\DistanceBundle\Entity\PostalCode;
 use NS\DistanceBundle\Repositories\PostalCodeRepository;
 use NS\DistanceBundle\Services\PostalCodeChecker;
@@ -31,6 +32,10 @@ class PostalCodeCheckerTest extends TestCase
         $this->httpClient    = $this->createMock(HttpClientInterface::class);
         $this->repository    = $this->createMock(PostalCodeRepository::class);
         $this->checker       = new PostalCodeChecker($this->entityManager, $this->httpClient, 'apiKey');
+
+        $unitOfWork = $this->createMock(UnitOfWork::class);
+        $unitOfWork->method('getScheduledEntityInsertions')->willReturn([]);
+        $this->entityManager->method('getUnitOfWork')->willReturn($unitOfWork);
     }
 
     public function testResultIsInDB(): void
@@ -67,5 +72,49 @@ class PostalCodeCheckerTest extends TestCase
 
         $this->assertNull($this->checker->getLatitudeAndLongitude(''));
         $this->assertNull($this->checker->getLatitudeAndLongitude(null));
+    }
+
+    public function testGeocodingUsesComponentTypes(): void
+    {
+        $result = json_decode(file_get_contents(__DIR__.'/response.json'), true);
+        $result['results'][0]['address_components'] = [
+            ['short_name' => 'ON', 'types' => ['administrative_area_level_1', 'political']],
+            ['short_name' => 'Toronto', 'types' => ['locality', 'political']],
+            ['short_name' => 'CA', 'types' => ['country', 'political']],
+            ['short_name' => 'Old Toronto', 'types' => ['postal_town']],
+        ];
+        $this->mockGeocodingResult($result);
+        $this->entityManager->expects($this->once())->method('persist')->with($this->callback(
+            static fn (PostalCode $point): bool => $point->getCity() === 'Toronto' && $point->getProvince() === 'ON'
+        ));
+
+        $point = $this->checker->getLatitudeAndLongitude('M5V3L9');
+        $this->assertSame('Toronto', $point->getCity());
+        $this->assertSame('ON', $point->getProvince());
+    }
+
+    public function testGeocodingWithMissingAddressFieldsReturnsCoordinatesWithoutCaching(): void
+    {
+        $result = json_decode(file_get_contents(__DIR__.'/response.json'), true);
+        $result['results'][0]['address_components'] = [
+            ['short_name' => 'CA', 'types' => ['country', 'political']],
+        ];
+        $this->mockGeocodingResult($result);
+        $this->entityManager->expects($this->never())->method('persist');
+
+        $point = $this->checker->getLatitudeAndLongitude('T3A5J4');
+        $this->assertSame(51.1492768, $point->getLatitude());
+        $this->assertSame(-114.1077228, $point->getLongitude());
+        $this->assertNull($point->getCity());
+        $this->assertNull($point->getProvince());
+    }
+
+    private function mockGeocodingResult(array $result): void
+    {
+        $this->repository->method('getByCode')->willReturn(null);
+        $this->entityManager->method('getRepository')->willReturn($this->repository);
+        $response = $this->createMock(ResponseInterface::class);
+        $response->method('getContent')->willReturn(json_encode($result));
+        $this->httpClient->expects($this->once())->method('request')->willReturn($response);
     }
 }

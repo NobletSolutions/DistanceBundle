@@ -2,6 +2,7 @@
 
 namespace NS\DistanceBundle\Command;
 
+use NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
 use NS\DistanceBundle\Services\DistanceCalculator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -41,7 +42,17 @@ class CalculateCommand extends Command
             $dest = explode(',', $dest);
         }
 
-        $distances = $this->calculator->getDistanceBetweenPostalCodes($source, $dest);
+        try {
+            $distances = $this->calculator->getDistanceBetweenPostalCodes($source, $dest);
+        } catch (UnknownPostalCodeException $exception) {
+            $output->writeln($exception->getMessage(), OutputInterface::OUTPUT_RAW);
+            return Command::FAILURE;
+        }
+
+        if ($distances === []) {
+            $output->writeln('No distances found for the requested postal codes.');
+            return Command::FAILURE;
+        }
 
         foreach ($distances as $sourceCode => $destinations) {
             foreach ($destinations as $destinationCode => $distance) {

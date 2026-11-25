@@ -2,6 +2,8 @@
 
 namespace NS\DistanceBundle\Entity;
 
+use NS\DistanceBundle\Validator\PostalCodeValidator;
+
 class PostalCode implements GeographicPointInterface
 {
     /**
@@ -25,12 +27,12 @@ class PostalCode implements GeographicPointInterface
     private $longitude;
     
     /**
-     * @var string $city
+     * @var string|null $city
      */
     private $city;
     
     /**
-     * @var string $province
+     * @var string|null $province
      */
     private $province;
 
@@ -56,7 +58,7 @@ class PostalCode implements GeographicPointInterface
      */
     public function setPostalCode($postalCode)
     {
-        $this->postalCode = strtoupper(preg_replace('/\s+/', '', $postalCode));
+        $this->postalCode = PostalCodeValidator::normalize($postalCode);
 
         return $this;
     }
@@ -100,7 +102,7 @@ class PostalCode implements GeographicPointInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getCity()
     {
@@ -108,7 +110,7 @@ class PostalCode implements GeographicPointInterface
     }
 
     /**
-     * @param string $city
+     * @param string|null $city
      * @return \NS\DistanceBundle\Entity\PostalCode
      */
     public function setCity($city)
@@ -119,7 +121,7 @@ class PostalCode implements GeographicPointInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getProvince()
     {
@@ -127,7 +129,7 @@ class PostalCode implements GeographicPointInterface
     }
 
     /**
-     * @param string $province
+     * @param string|null $province
      * @return \NS\DistanceBundle\Entity\PostalCode
      */
     public function setProvince($province)
