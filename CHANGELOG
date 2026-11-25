@@ -1,4 +1,10 @@
 
+VERSION 4  SUPPORT SF5+
+=======================
+
+   Version 4.0 - Support SF5+
+      25/11/2026 00:02  4.0.0  initial release
+
 VERSION 3  USE SYMFONY/HTTP-CLIENT
 ==================================
 
