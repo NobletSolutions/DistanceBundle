@@ -1,4 +1,3 @@
-ns_distance_routes:
-    resource: "@NSDistanceBundle/Controller"
-    prefix:   /
-    type: annotation
+ns_distance_rest:
+    path: /rest/distance/{postalcode1}/{postalcode2}
+    controller: NS\DistanceBundle\Controller\RestController::getAction

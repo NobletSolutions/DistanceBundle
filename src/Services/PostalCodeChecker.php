@@ -44,7 +44,7 @@ class PostalCodeChecker
             throw new InvalidPostalCodeException();
         }
 
-        $postalObj = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCode($cleanPostalCode);
+        $postalObj = $this->entityMgr->getRepository(PostalCode::class)->getByCode($cleanPostalCode);
 
         if (!$postalObj) {
             $url      = sprintf('https://maps.googleapis.com/maps/api/geocode/json?components=postal_code:%s&sensor=false&key=%s', $cleanPostalCode, $this->key);

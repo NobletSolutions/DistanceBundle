@@ -2,17 +2,26 @@
 
 namespace NS\DistanceBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use NS\DistanceBundle\Services\DistanceCalculator;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class CalculateCommand extends ContainerAwareCommand
+class CalculateCommand extends Command
 {
-    protected function configure()
+    private DistanceCalculator $calculator;
+
+    public function __construct(DistanceCalculator $calculator)
+    {
+        $this->calculator = $calculator;
+        parent::__construct();
+    }
+
+    protected function configure(): void
     {
         $this->setName('distance:calculate')
-            ->setDescription('Import Postal Codes')
+            ->setDescription('Calculate distances between postal codes')
             ->setDefinition(array(
                 new InputArgument(
                     'source', InputArgument::REQUIRED, 'Source Postal Code'
@@ -23,7 +32,7 @@ class CalculateCommand extends ContainerAwareCommand
         ));
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $source = $input->getArgument('source');
         $dest   = $input->getArgument('dest');
@@ -32,11 +41,15 @@ class CalculateCommand extends ContainerAwareCommand
             $dest = explode(',', $dest);
         }
 
-        $distance = $this->getContainer()->get('ns_distance.calculator')->getDistanceBetweenPostalCodes($source, $dest);
+        $distances = $this->calculator->getDistanceBetweenPostalCodes($source, $dest);
 
-        foreach ($distance[$source] as $dest => $calc) {
-            $output->writeln(sprintf('The distance between %s and %s is %s KM', $source, $dest, $calc['distance']->getDistance()));
+        foreach ($distances as $sourceCode => $destinations) {
+            foreach ($destinations as $destinationCode => $distance) {
+                $output->writeln(sprintf('The distance between %s and %s is %s KM', $sourceCode, $destinationCode, $distance->getDistance()));
+            }
         }
+
+        return Command::SUCCESS;
     }
 }
 

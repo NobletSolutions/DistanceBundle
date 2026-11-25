@@ -3,20 +3,18 @@
 namespace NS\DistanceBundle\Controller;
 
 use NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use NS\DistanceBundle\Services\DistanceCalculator;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Routing\Annotation\Route;
 
-class RestController extends Controller
+class RestController
 {
-    /**
-     * @Route("/rest/distance/{postalcode1}/{postalcode2}", name="ns_distance_rest")
-     *
-     * @param string $postalcode1
-     * @param string $postalcode2
-     *
-     * @return JsonResponse
-     */
+    private DistanceCalculator $calculator;
+
+    public function __construct(DistanceCalculator $calculator)
+    {
+        $this->calculator = $calculator;
+    }
+
     public function getAction(string $postalcode1, string $postalcode2): JsonResponse
     {
         if (strpos($postalcode2, ',') !== FALSE) {
@@ -24,7 +22,7 @@ class RestController extends Controller
         }
 
         try {
-            $distance = $this->get('ns_distance.calculator')->getDistanceBetweenPostalCodes($postalcode1, $postalcode2);
+            $distance = $this->calculator->getDistanceBetweenPostalCodes($postalcode1, $postalcode2);
         }
         catch (UnknownPostalCodeException $exception) {
             $distance = array();

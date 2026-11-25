@@ -1,49 +1,36 @@
 <?php
 
 namespace NS\DistanceBundle\Entity;
-use Doctrine\ORM\Mapping as ORM;
 
-/**
- * @ORM\Table(name="postalcodes",uniqueConstraints={@ORM\UniqueConstraint(name="postal_code_idx", columns={"postal_code"})})
- * @ORM\Entity(repositoryClass="NS\DistanceBundle\Repositories\PostalCodeRepository")
- */
 class PostalCode implements GeographicPointInterface
 {
     /**
      * @var integer $id
-     * @ORM\Column(name="id",type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
     
     /**
      * @var string $postalCode
-     * @ORM\Column(name="postal_code",type="string",length=64)
      */
     private $postalCode;
 
     /**
      * @var string $latitude
-     * @ORM\Column(name="latitude",type="decimal", precision=14, scale=10)
      */
     private $latitude;
 
     /**
      * @var string $longitude
-     * @ORM\Column(name="longitude",type="decimal", precision=14, scale=10)
      */
     private $longitude;
     
     /**
      * @var string $city
-     * @ORM\Column(name="city",type="string")
      */
     private $city;
     
     /**
      * @var string $province
-     * @ORM\Column(name="province",type="string")
      */
     private $province;
 

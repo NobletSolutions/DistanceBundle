@@ -5,19 +5,18 @@ namespace NS\DistanceBundle\Tests\Services;
 use \NS\DistanceBundle\Entity\PostalCode;
 use \NS\DistanceBundle\Services\DistanceCalculator;
 use PHPUnit\Framework\TestCase;
-use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use NS\DistanceBundle\Entity\Distance;
-use Doctrine\Common\Persistence\ObjectManager;
+use NS\DistanceBundle\Exceptions\UnknownPostalCodeException;
+use NS\DistanceBundle\Repositories\PostalCodeRepository;
+use PHPUnit\Framework\MockObject\MockObject;
 
 class DistanceCalculatorTest extends TestCase
 {
 
     public function testMultipleGetDistanceByCode(): void
     {
-        $repo = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->setMethods(array('getByCodes'))
-            ->getMock();
+        $repo = $this->createMock(PostalCodeRepository::class);
 
         $repo->expects($this->once())
             ->method('getByCodes')
@@ -27,7 +26,7 @@ class DistanceCalculatorTest extends TestCase
         $mockEntityMgr = $this->getEntityManager();
         $mockEntityMgr->expects($this->once())
             ->method('getRepository')
-            ->with('NSDistanceBundle:PostalCode')
+            ->with(PostalCode::class)
             ->willReturn($repo);
 
         $calculator = new DistanceCalculator($mockEntityMgr);
@@ -44,10 +43,7 @@ class DistanceCalculatorTest extends TestCase
 
     public function testSimpleGetDistanceByCode(): void
     {
-        $repo = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->setMethods(array('getByCodes'))
-            ->getMock();
+        $repo = $this->createMock(PostalCodeRepository::class);
 
         $repo->expects($this->once())
             ->method('getByCodes')
@@ -58,7 +54,7 @@ class DistanceCalculatorTest extends TestCase
 
         $mockEntityMgr->expects($this->once())
             ->method('getRepository')
-            ->with('NSDistanceBundle:PostalCode')
+            ->with(PostalCode::class)
             ->willReturn($repo);
 
         $calculator = new DistanceCalculator($mockEntityMgr);
@@ -72,10 +68,7 @@ class DistanceCalculatorTest extends TestCase
 
     public function testGetDistanceByCodeIsEmpty(): void
     {
-        $repo = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->setMethods(array('getByCodes'))
-            ->getMock();
+        $repo = $this->createMock(PostalCodeRepository::class);
 
         $repo->expects($this->once())
             ->method('getByCodes')
@@ -86,7 +79,7 @@ class DistanceCalculatorTest extends TestCase
 
         $mockEntityMgr->expects($this->once())
             ->method('getRepository')
-            ->with('NSDistanceBundle:PostalCode')
+            ->with(PostalCode::class)
             ->willReturn($repo);
 
         $calculator = new DistanceCalculator($mockEntityMgr);
@@ -100,7 +93,7 @@ class DistanceCalculatorTest extends TestCase
 
         $mockEntityMgr->expects($this->never())
             ->method('getRepository')
-            ->with('NSDistanceBundle:PostalCode');
+            ->with(PostalCode::class);
 
         $calculator = new DistanceCalculator($mockEntityMgr);
         $distance   = $calculator->getDistanceBetweenPostalCodes('T3A5J4', 'T3A5J4');
@@ -112,10 +105,7 @@ class DistanceCalculatorTest extends TestCase
 
     public function testIncludingSourceAndDestCodesResultsInZeroDistance(): void
     {
-        $repo = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->setMethods(array('getByCodes'))
-            ->getMock();
+        $repo = $this->createMock(PostalCodeRepository::class);
 
         $repo->expects($this->once())
             ->method('getByCodes')
@@ -126,7 +116,7 @@ class DistanceCalculatorTest extends TestCase
 
         $mockEntityMgr->expects($this->once())
             ->method('getRepository')
-            ->with('NSDistanceBundle:PostalCode')
+            ->with(PostalCode::class)
             ->willReturn($repo);
 
         $calculator = new DistanceCalculator($mockEntityMgr);
@@ -156,7 +146,7 @@ class DistanceCalculatorTest extends TestCase
         $distance   = $calculator->getDistance(current($ret), end($ret));
 
         $this->assertInstanceOf(Distance::class, $distance);
-        $this->assertEquals(9.5858131440110874, $distance->getDistance());
+        $this->assertEqualsWithDelta(9.5858131440110874, $distance->getDistance(), 0.000001);
     }
 
     public function testAdjustCodesArray(): void
@@ -178,15 +168,9 @@ class DistanceCalculatorTest extends TestCase
         $this->assertEquals($codes[1], 'T3A5J4');
     }
 
-    /**
-     * @expectedException NS\DistanceBundle\Exceptions\UnknownPostalCodeException
-     */
     public function testNoSourcePostalCode(): void
     {
-        $repo = $this->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->setMethods(array('getByCodes'))
-            ->getMock();
+        $repo = $this->createMock(PostalCodeRepository::class);
 
         $repo->expects($this->once())
             ->method('getByCodes')
@@ -197,12 +181,12 @@ class DistanceCalculatorTest extends TestCase
 
         $mockEntityMgr->expects($this->once())
             ->method('getRepository')
-            ->with('NSDistanceBundle:PostalCode')
+            ->with(PostalCode::class)
             ->willReturn($repo);
 
         $calculator = new DistanceCalculator($mockEntityMgr);
-        $distance   = $calculator->getDistanceBetweenPostalCodes('H0H0H0', 'T2A6J3');
-        $this->assertEmpty($distance);
+        $this->expectException(UnknownPostalCodeException::class);
+        $calculator->getDistanceBetweenPostalCodes('H0H0H0', 'T2A6J3');
     }
 
     /**
@@ -252,13 +236,8 @@ class DistanceCalculatorTest extends TestCase
         return array('T3A5J4' => $source, 'T2L0W2' => $dest);
     }
 
-    public function getEntityManager(array $methods = array()): \PHPUnit\Framework\MockObject\MockObject
+    private function getEntityManager(): MockObject
     {
-        $objMethods = array('find','persist','remove','flush','detach','refresh','merge','clear','getClassMetadata','getMetadataFactory','initializeObject','getRepository','contains');
-        return $this->getMockBuilder(ObjectManager::class)
-            ->disableOriginalConstructor()
-            ->setMethods(array_merge($objMethods,$methods))
-            ->getMock();
-
+        return $this->createMock(EntityManagerInterface::class);
     }
 }

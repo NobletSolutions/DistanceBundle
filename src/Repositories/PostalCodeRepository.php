@@ -9,11 +9,11 @@ class PostalCodeRepository extends EntityRepository
 {
     public function getByCodes(array $codes)
     {
-        return $this->_em->createQuery("SELECT p 
-                                        FROM NS\DistanceBundle\Entity\PostalCode p INDEX BY p.postalCode 
-                                        WHERE p.postalCode IN (:ids)")
-                ->setParameters(array('ids' => $codes))
-                ->getResult();
+        return $this->createQueryBuilder('p', 'p.postalCode')
+            ->where('p.postalCode IN (:ids)')
+            ->setParameter('ids', $codes)
+            ->getQuery()
+            ->getResult();
     }
 
     public function getByCode($postalCode)

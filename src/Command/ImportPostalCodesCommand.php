@@ -2,81 +2,105 @@
 
 namespace NS\DistanceBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception as DBALException;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use KzykHys\CsvParser\CsvParser;
+use ZipArchive;
 
-class ImportPostalCodesCommand extends ContainerAwareCommand
+class ImportPostalCodesCommand extends Command
 {
-    protected function configure()
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+        parent::__construct();
+    }
+
+    protected function configure(): void
     {
         $this->setName('distance:import')
             ->setDescription('Import Postal Codes')
-            ->setDefinition(array(
-                new InputArgument(
-                    'file', InputArgument::REQUIRED, 'Path to canadian csv file'
-                ),));
+            ->addArgument('file', InputArgument::REQUIRED, 'Path to the Canadian GeoNames ZIP archive');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $path = $input->getArgument('file');
         if (!is_file($path)) {
             $output->writeln("<error>Path not found: $path</error>");
-            return -1;
+            return Command::FAILURE;
         }
 
-        $file     = basename($path);
-        $rFile    = mt_rand(150, 1500);
-        $newFile  = $this->getContainer()->get('kernel')->getRootDir().DIRECTORY_SEPARATOR . '..'.DIRECTORY_SEPARATOR . $rFile . $file;
-        $dir = $this->getContainer()->get('kernel')->getRootDir().DIRECTORY_SEPARATOR . '..'.DIRECTORY_SEPARATOR . 'postal_codes'.DIRECTORY_SEPARATOR.'postalcodes'.uniqid('pc', true);
-        $newFile2 = str_replace('.zip', '', $dir.DIRECTORY_SEPARATOR. 'CA.txt');
+        $archive = new ZipArchive();
+        if ($archive->open($path) !== true) {
+            $output->writeln('Unable to open the postal code archive.');
+            return Command::FAILURE;
+        }
 
-        copy($path, $newFile);
-        exec("unzip $newFile -d $dir");
+        if (false === $stream = $archive->getStream('CA.txt')) {
+            $archive->close();
+            $output->writeln('The postal code archive does not contain CA.txt.');
+            return Command::FAILURE;
+        }
 
-        $output->writeln("Unzipped $newFile");
+        $rows = [];
+        try {
+            while (($row = fgetcsv($stream, 0, "\t", '"', '')) !== false) {
+                if ($row === [null]) {
+                    continue;
+                }
 
-        chmod($newFile2, 777);
+                if (count($row) < 11) {
+                    $output->writeln('CA.txt contains an incomplete postal code row.');
+                    return Command::FAILURE;
+                }
 
-        $parser = CsvParser::fromFile($newFile2, [
-            'delimiter' => "\t"
-        ]);
-        $results = $parser->parse();
+                $rows[] = [$row[2], $row[4], $row[1], $row[9], $row[10]];
+            }
+        } finally {
+            fclose($stream);
+            $archive->close();
+        }
 
-        $con  = $this->getContainer()->get('doctrine.orm.entity_manager')->getConnection();
-        $output->writeln('Truncating postal codes.');
-        $con->exec('TRUNCATE postalcodes');
+        if ($rows === []) {
+            $output->writeln('CA.txt contains no postal codes.');
+            return Command::FAILURE;
+        }
 
-        $progressBar = new ProgressBar($output, count($results));
-        $output->writeln('Loading rows:');
+        $connection = $this->entityManager->getConnection();
+        $progressBar = new ProgressBar($output, count($rows));
+        $output->writeln('Replacing postal codes.');
         $progressBar->start();
-        $i = 0;
-        $x = 0;
-        foreach($results as $result)
-        {
-            try
-            {
-                $stmt  = $con->prepare('REPLACE INTO postalcodes (city, province, postal_code, latitude, longitude) VALUES (?, ?, ?, ?, ?);');
-                $stmt->execute([$result[2], $result[4], $result[1], $result[9], $result[10]]);
-                $progressBar->advance();
-                $i++;
-            }
-            catch(DBALException $exception)
-            {
-                $output->writeln('Unable to load row. '.$exception->getMessage());
-                $x++;
-                continue;
-            }
+
+        try {
+            $connection->transactional(static function (Connection $connection) use ($rows, $progressBar): void {
+                $connection->executeStatement('DELETE FROM postalcodes');
+                $statement = $connection->prepare(
+                    'REPLACE INTO postalcodes (city, province, postal_code, latitude, longitude) VALUES (?, ?, ?, ?, ?)'
+                );
+                foreach ($rows as $row) {
+                    foreach ($row as $index => $value) {
+                        $statement->bindValue($index + 1, $value);
+                    }
+                    $statement->executeStatement();
+                    $progressBar->advance();
+                }
+            });
+        } catch (DBALException $exception) {
+            $output->writeln(['', 'Unable to import postal codes. '.$exception->getMessage()]);
+            return Command::FAILURE;
         }
 
         $progressBar->finish();
-        $output->writeln('');
+        $output->writeln(['', sprintf('Loaded %d rows', count($rows))]);
 
-        $output->writeln("Loaded $i rows, $x failed");
+        return Command::SUCCESS;
     }
 }
 

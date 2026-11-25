@@ -57,7 +57,7 @@ class DistanceCalculator
         }
 
         /** @var PostalCode[] $data */
-        $data = $this->entityMgr->getRepository('NSDistanceBundle:PostalCode')->getByCodes($codes);
+        $data = $this->entityMgr->getRepository(PostalCode::class)->getByCodes($codes);
 
         if (count($data) < 2) {
             return [];

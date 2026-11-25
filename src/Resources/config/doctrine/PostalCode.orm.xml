@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping">
+    <entity name="NS\DistanceBundle\Entity\PostalCode" table="postalcodes"
+            repository-class="NS\DistanceBundle\Repositories\PostalCodeRepository">
+        <unique-constraints>
+            <unique-constraint name="postal_code_idx" columns="postal_code"/>
+        </unique-constraints>
+        <id name="id" column="id" type="integer">
+            <generator strategy="AUTO"/>
+        </id>
+        <field name="postalCode" column="postal_code" type="string" length="64"/>
+        <field name="latitude" column="latitude" type="decimal" precision="14" scale="10"/>
+        <field name="longitude" column="longitude" type="decimal" precision="14" scale="10"/>
+        <field name="city" column="city" type="string"/>
+        <field name="province" column="province" type="string"/>
+    </entity>
+</doctrine-mapping>

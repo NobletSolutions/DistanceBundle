@@ -3,15 +3,17 @@ services:
     autowire: true
     autoconfigure: true
 
-  NS\DistanceBundle\:
-    resource: '../../'
-    exclude:
-      - '../../DependencyInjection'
-      - '../../Entity'
+  NS\DistanceBundle\Command\CalculateCommand: ~
+  NS\DistanceBundle\Command\DownloadPostalCodesCommand:
+    arguments:
+      $projectDir: '%kernel.project_dir%'
+  NS\DistanceBundle\Command\ImportPostalCodesCommand: ~
 
-  NS\DistanceBundle\Controller\:
-    resource: '../../Controller'
+  NS\DistanceBundle\Controller\RestController:
     tags: ['controller.service_arguments']
+    public: true
+
+  NS\DistanceBundle\Services\DistanceCalculator: ~
 
   NS\DistanceBundle\Services\PostalCodeChecker:
     arguments:

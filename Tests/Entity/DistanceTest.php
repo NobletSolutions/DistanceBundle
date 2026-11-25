@@ -14,12 +14,10 @@ class DistanceTest extends TestCase
         $this->assertEquals(1,$distance->getDistance('M'));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testInvalidDistanceEntity()
     {
         $distance = new \NS\DistanceBundle\Entity\Distance(1);
-        $this->assertEquals(1.609344,$distance->getDistance('KM'));
+        $this->expectException(\InvalidArgumentException::class);
+        $distance->getDistance('KM');
     }
 }

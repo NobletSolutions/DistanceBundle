@@ -2,7 +2,6 @@
 
 namespace NS\DistanceBundle\Tests\Services;
 
-use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManagerInterface;
 use NS\DistanceBundle\Entity\PostalCode;
 use NS\DistanceBundle\Repositories\PostalCodeRepository;
@@ -38,16 +37,16 @@ class PostalCodeCheckerTest extends TestCase
     {
         $postCode = new PostalCode();
         $this->repository->expects($this->once())->method('getByCode')->with('T3A5J4')->willReturn($postCode);
-        $this->entityManager->expects($this->once())->method('getRepository')->with('NSDistanceBundle:PostalCode')->willReturn($this->repository);
+        $this->entityManager->expects($this->once())->method('getRepository')->with(PostalCode::class)->willReturn($this->repository);
         $this->assertEquals($postCode, $this->checker->getLatitudeAndLongitude('T3A5J4'));
     }
 
     public function testResultIsNotInDB(): void
     {
         $this->repository->expects($this->once())->method('getByCode')->with('T3A5J4')->willReturn(null);
-        $this->entityManager->expects($this->once())->method('getRepository')->with('NSDistanceBundle:PostalCode')->willReturn($this->repository);
+        $this->entityManager->expects($this->once())->method('getRepository')->with(PostalCode::class)->willReturn($this->repository);
         $this->entityManager->expects($this->once())->method('persist');
-        $this->entityManager->expects($this->once())->method('flush');
+        $this->entityManager->expects($this->never())->method('flush');
 
         $response = $this->createMock(ResponseInterface::class);
         $response->expects($this->once())->method('getContent')->willReturn(file_get_contents(__DIR__.'/response.json'));
@@ -61,7 +60,7 @@ class PostalCodeCheckerTest extends TestCase
 
     public function testRequestIsEmpty(): void
     {
-        $this->entityManager->expects($this->never())->method('getRepository')->with('NSDistanceBundle:PostalCode')->willReturn($this->repository);
+        $this->entityManager->expects($this->never())->method('getRepository')->with(PostalCode::class)->willReturn($this->repository);
         $this->repository->expects($this->never())->method('getByCode')->willReturn(null);
         $this->entityManager->expects($this->never())->method('persist');
         $this->entityManager->expects($this->never())->method('flush');
